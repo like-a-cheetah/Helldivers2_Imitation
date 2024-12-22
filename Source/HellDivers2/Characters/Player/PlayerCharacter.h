@@ -51,6 +51,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -158,6 +159,8 @@ protected:
 	TObjectPtr<UAnimMontage> MT_ThrowStratagemBall;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TObjectPtr<UAnimMontage> MT_PullingPin;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_PlayerRebirth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TArray<TObjectPtr<UAnimMontage>> MT_Divings;
@@ -344,6 +347,9 @@ private:
 	//TArray<FOnSetActiveW> OnSetActiveWDelegates;
 
 	void SetStratagemFromGInst();
+
+public:
+	void PlayerRebirth();
 
 	// IStratagemInterface을(를) 통해 상속됨
 public:

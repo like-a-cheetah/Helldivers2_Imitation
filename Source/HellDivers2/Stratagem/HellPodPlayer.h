@@ -9,6 +9,8 @@
 /**
  * 
  */
+DECLARE_DELEGATE(FOnPlayerArrive);
+
 UCLASS()
 class HELLDIVERS2_API AHellPodPlayer : public AStratagem
 {
@@ -27,5 +29,12 @@ private:
 	TObjectPtr<UAnimSequence> StartAnim;
 	TObjectPtr<UAnimMontage> MT_RecallPlayer;
 
-	TObjectPtr<USkeletalMeshComponent> TestMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCameraComponent> FollowCamera;
+
+	FOnPlayerArrive OnPlayerArrive;
+
+public:
+	void AttchPlayer(class APlayerCharacter* Player);
+
 };

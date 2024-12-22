@@ -5,6 +5,7 @@
 
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimMontage.h"
+#include "Camera/CameraComponent.h"
 
 #include "Characters/Player/PlayerCharacter.h"
 
@@ -17,12 +18,6 @@ AHellPodPlayer::AHellPodPlayer() {
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_RecallPlayerRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Stratagem/HellPodPlayer/MT_RecallPlayer.MT_RecallPlayer'"));
 	if (MT_RecallPlayerRef.Object) MT_RecallPlayer = MT_RecallPlayerRef.Object;
-
-	TestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TestMesh"));
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TestMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/HellDivers2/Characters/Player/models/RealModel.RealModel'"));
-	if (TestMeshRef.Succeeded()) TestMesh->SetSkeletalMeshAsset(TestMeshRef.Object);
-
-	if(TestMesh) TestMesh->SetupAttachment(SkelMeshComp, FName(TEXT("footrest_Socket")));
 }
 
 void AHellPodPlayer::BeginPlay()
@@ -40,4 +35,14 @@ void AHellPodPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	SkelMeshComp->HideBoneByName(FName(TEXT("hatch")), EPhysBodyOp::PBO_None);
 	SkelMeshComp->PlayAnimation(MT_RecallPlayer, false);
 	SkelMeshComp->SetGenerateOverlapEvents(false);
+
+	OnPlayerArrive.Execute();
+}
+
+void AHellPodPlayer::AttchPlayer(APlayerCharacter* Player)
+{
+	FAttachmentTransformRules CustomRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+	Player->AttachToActor(this, CustomRules, FName(TEXT("footrest_Socket")));
+
+	OnPlayerArrive.BindUObject(Player, &APlayerCharacter::PlayerRebirth);
 }

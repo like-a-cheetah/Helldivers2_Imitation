@@ -57,7 +57,6 @@ APlayerCharacter::APlayerCharacter()
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/HellDivers2/Characters/Player/Input/IMC_Default.IMC_Default'"));
 	if (InputMappingContextRef.Object)	DefaultMappingContext = InputMappingContextRef.Object;
 
-
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -93.0f), FRotator(0.0f, 90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
@@ -227,6 +226,9 @@ void APlayerCharacter::MontageFind() {
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PullingPinRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/ItemControl/MT_PullingPin.MT_PullingPin'"));
 	if (MT_PullingPinRef.Object)	MT_PullingPin = MT_PullingPinRef.Object;
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerRebirthRef(TEXT(""));
+	if (MT_PlayerRebirthRef.Object)	MT_PlayerRebirth = MT_PlayerRebirthRef.Object;
+
 }
 
 void APlayerCharacter::SoundWaveFind()
@@ -278,8 +280,8 @@ void APlayerCharacter::InitCameraSet()
 
 	SceneCaptureComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
 	SceneCaptureComp->SetupAttachment(RootComponent);
-	SceneCaptureComp->SetWorldRotation(FRotator(-150.0f, 0.0f, 0.0f));
-	SceneCaptureComp->SetRelativeLocation(FVector(133.324848, 79.231115, 66.490160));
+	SceneCaptureComp->SetWorldRotation(FRotator(0.0f, 170.0f, 30.0f));
+	SceneCaptureComp->SetRelativeLocation(FVector(170.0, -30.0, 0));
 	SceneCaptureComp->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	SceneCaptureComp->ProjectionType = ECameraProjectionMode::Orthographic;
 	SceneCaptureComp->OrthoWidth = 170.0f;
@@ -293,11 +295,22 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetStratagemFromGInst();
+}
 
-	DiversController = CastChecked<ADiversPlayerController>(GetController());
+void APlayerCharacter::PossessedBy(AController* NewController)
+{
+	DiversController = CastChecked<ADiversPlayerController>(NewController);
 	if (!DiversController)
 		UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
 
+	GetCapsuleComponent()->SetSimulatePhysics(false);
+	GetCapsuleComponent()->SetEnableGravity(false);
+	GetMesh()->SetSimulatePhysics(false);
+	GetMesh()->SetEnableGravity(false);
+	GetCharacterMovement()->GravityScale = 0.0f;
+	CameraBoom->TargetArmLength = 2000.0f;
+	CameraBoom->bDoCollisionTest = false;
+	
 	SceneCaptureComp->ShowOnlyActorComponents(this, true);
 
 	SetCameraData(CameraDataManager[0]);
@@ -305,14 +318,9 @@ void APlayerCharacter::BeginPlay()
 	//SuccessStratagemIndex = -1;
 
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(DiversController->GetLocalPlayer()))
-	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-	}
 
-	FActorSpawnParameters actorParam;
-	actorParam.Owner = this;
-
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
+	SetStratagemFromGInst();
 }
 
 // Called every frame
@@ -527,6 +535,12 @@ void APlayerCharacter::SetStratagemFromGInst()
 			OnStratagemSet.Execute(Stratagems);
 		}
 	}
+}
+
+void APlayerCharacter::PlayerRebirth()
+{
+	UE_LOG(LogTemp, Log, TEXT("Rebirth"));
+	PlayAnimMontage(MT_PlayerRebirth);
 }
 
 void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
