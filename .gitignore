@@ -7,7 +7,16 @@ hooks/
 Intermediate/
 Platforms/
 Saved/
-Content/
+Content/__ExternalActors__/
+Content/Collections
+Content/Developers
+Content/Fonts
+Content/LevelPrototyping
+Content/PROJECTS
+Content/Realistic_Starter_VFX_Pack_Vol2
+Content/StarterContent
+Content/Test
+Content/VFX_PROJECT
 
 # Prerequisites
 *.d
