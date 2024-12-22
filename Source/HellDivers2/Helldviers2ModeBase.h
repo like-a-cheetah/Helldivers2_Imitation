@@ -22,6 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	TSubclassOf<class AHellPodPlayer> HellPodPlayer_C;
+
 	FVector StartPos;
 	FRotator StartRot;
 };

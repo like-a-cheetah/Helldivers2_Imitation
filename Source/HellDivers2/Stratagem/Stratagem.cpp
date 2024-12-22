@@ -11,6 +11,7 @@ AStratagem::AStratagem()
 	SkelMeshComp->SetGenerateOverlapEvents(true);
 	SkelMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AStratagem::OnOverlapBegin);
 	SkelMeshComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	SkelMeshComp->SetAllMassScale(500.0f);
 }
 
 void AStratagem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)

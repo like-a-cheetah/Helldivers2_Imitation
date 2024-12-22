@@ -298,6 +298,7 @@ public:
 	FORCEINLINE bool IsSucceededStratagem() override { return bSucceededStratagem; }
 	FORCEINLINE bool IsPullingPin() override { return bPullingPin; };
 	FORCEINLINE bool IsRightButton() override { return bRightButton; }
+	void Summoned() override;
 
 	FVector2D rotateValue;
 

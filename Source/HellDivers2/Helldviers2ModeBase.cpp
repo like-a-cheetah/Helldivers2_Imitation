@@ -14,6 +14,9 @@
 AHelldviers2ModeBase::AHelldviers2ModeBase()
 {
 	PlayerControllerClass = ADiversPlayerController::StaticClass();
+
+	static ConstructorHelpers::FClassFinder<AHellPodPlayer> HellPodPlayer_C_Ref(TEXT("/Game/HellDivers2/Stratagem/HellPodPlayer/MyHellPodPlayer.MyHellPodPlayer_C"));
+	if (HellPodPlayer_C_Ref.Class) HellPodPlayer_C = HellPodPlayer_C_Ref.Class;
 }
 
 AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Controller)
@@ -28,7 +31,7 @@ AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Cont
 		StartRot = PlayerStart->GetActorRotation();
 	}
 
-	StartPos.Z += 1000.0f;
+	StartPos.Z += 20000.0f;
 
     return Super::ChoosePlayerStart_Implementation(Controller);
 }
@@ -40,6 +43,6 @@ void AHelldviers2ModeBase::BeginPlay()
 	APlayerCharacter* PlayerChar = GetWorld()->SpawnActor<APlayerCharacter>(StartPos, StartRot);
 	PlayerController->Possess(PlayerChar);
 
-	AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(StartPos, StartRot);
+	AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
 	HellPod->AttchPlayer(PlayerChar);
 }

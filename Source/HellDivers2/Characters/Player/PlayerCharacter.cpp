@@ -226,7 +226,7 @@ void APlayerCharacter::MontageFind() {
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PullingPinRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/ItemControl/MT_PullingPin.MT_PullingPin'"));
 	if (MT_PullingPinRef.Object)	MT_PullingPin = MT_PullingPinRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerRebirthRef(TEXT(""));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerRebirthRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_RebirthPlayer.MT_RebirthPlayer'"));
 	if (MT_PlayerRebirthRef.Object)	MT_PlayerRebirth = MT_PlayerRebirthRef.Object;
 
 }
@@ -305,22 +305,37 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 
 	GetCapsuleComponent()->SetSimulatePhysics(false);
 	GetCapsuleComponent()->SetEnableGravity(false);
+
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetEnableGravity(false);
+
+	UE_LOG(LogTemp, Log, TEXT("%f"), GetCharacterMovement()->GetGravityZ());
 	GetCharacterMovement()->GravityScale = 0.0f;
-	CameraBoom->TargetArmLength = 2000.0f;
+
+	CameraBoom->TargetArmLength = 1300.0f;
 	CameraBoom->bDoCollisionTest = false;
 	
 	SceneCaptureComp->ShowOnlyActorComponents(this, true);
-
-	SetCameraData(CameraDataManager[0]);
-
-	//SuccessStratagemIndex = -1;
 
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(DiversController->GetLocalPlayer()))
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 
 	SetStratagemFromGInst();
+}
+
+void APlayerCharacter::Summoned()	//Rebirth 애니메이션 재생 후 호출 될 함수
+{
+
+	GetCapsuleComponent()->SetSimulatePhysics(false);
+	GetCapsuleComponent()->SetEnableGravity(false);
+
+	GetMesh()->SetSimulatePhysics(false);
+	GetMesh()->SetEnableGravity(false);
+
+	GetCharacterMovement()->GravityScale = 0.0f;
+
+	CameraBoom->bDoCollisionTest = false;
+	SetCameraData(CameraDataManager[0]);
 }
 
 // Called every frame
