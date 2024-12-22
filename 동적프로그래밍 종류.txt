@@ -1,0 +1,5 @@
+동적 프로그래밍 종류
+bottom up : 작은 문제에서 큰 문제로
+top down : 큰 문제에서 작은 문제로, DFS쓰는거,
+최대 부분 증가 수열(Longest Increasing Subsequence) : 돌다리 건너기
+냅색 : 가방에 최대로 보석 담기, 이때 보석의 개수는 무제한

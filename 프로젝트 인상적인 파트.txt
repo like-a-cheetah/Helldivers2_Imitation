@@ -1,0 +1,19 @@
+블로그 만들기
+
+적을 내용
+ai predict
+
+Meta = BindWidget
+
+렌더 타겟 만든 방법 적기(즐찾에 있음)
+
+OnClicked, OnPressed()의 차이점 (IsPressed())
+
+스트라타젬 버튼들 찾는 방식(WIdgetTree에 대해서 찾고 쓰기)
+
+새로운 맵을 로드하면, 기존의 객체들은 전부 사라짐, GameInstance를 이용해 이를 관리,
+
+DuplicateObject로 깊은 복사
+
+위젯이 화면에 나타나려고 하는 순간에 NativeConstruct 함수가 호출, CreateWidget으로 User위젯을 만들어도 Box->AddChild(StratagemCondition); 이런 상황에 NativeConstruct 함수가 호출됨
+위젯에서 UUserWidget이 아닌 그냥 버튼같은거 만들 때는 WidgetTree::ConstructWidget 사용
