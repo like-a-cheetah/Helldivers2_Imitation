@@ -298,12 +298,12 @@ public:
 	FORCEINLINE bool IsSucceededStratagem() override { return bSucceededStratagem; }
 	FORCEINLINE bool IsPullingPin() override { return bPullingPin; };
 	FORCEINLINE bool IsRightButton() override { return bRightButton; }
-	void Summoned() override;
 
 	FVector2D rotateValue;
 
 	// IPlayerControl을(를) 통해 상속됨
 	void GetCurrentZ() override;
+	void Summoned() override;
 
 // 위젯 관련
 protected:

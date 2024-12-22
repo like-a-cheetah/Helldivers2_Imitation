@@ -13,5 +13,6 @@ UCLASS()
 class HELLDIVERS2_API UAN_Summoned : public UAnimNotify
 {
 	GENERATED_BODY()
-	
+
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
 };

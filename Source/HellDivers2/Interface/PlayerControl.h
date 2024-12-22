@@ -25,4 +25,5 @@ class HELLDIVERS2_API IPlayerControl
 public:
 	virtual void Recoil(float Pitch, float Yaw) = 0;
 	virtual void GetCurrentZ() = 0;
+	virtual void Summoned() = 0;
 };

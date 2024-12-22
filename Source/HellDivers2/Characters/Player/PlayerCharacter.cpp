@@ -303,13 +303,12 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	if (!DiversController)
 		UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
 
-	GetCapsuleComponent()->SetSimulatePhysics(false);
-	GetCapsuleComponent()->SetEnableGravity(false);
+	//GetCapsuleComponent()->SetSimulatePhysics(false);
+	//GetCapsuleComponent()->SetEnableGravity(false);
 
-	GetMesh()->SetSimulatePhysics(false);
-	GetMesh()->SetEnableGravity(false);
+	//GetMesh()->SetSimulatePhysics(false);
+	//GetMesh()->SetEnableGravity(false);
 
-	UE_LOG(LogTemp, Log, TEXT("%f"), GetCharacterMovement()->GetGravityZ());
 	GetCharacterMovement()->GravityScale = 0.0f;
 
 	CameraBoom->TargetArmLength = 1300.0f;
@@ -326,15 +325,15 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 void APlayerCharacter::Summoned()	//Rebirth 애니메이션 재생 후 호출 될 함수
 {
 
-	GetCapsuleComponent()->SetSimulatePhysics(false);
-	GetCapsuleComponent()->SetEnableGravity(false);
+	//GetCapsuleComponent()->SetSimulatePhysics(true);
+	//GetCapsuleComponent()->SetEnableGravity(true);
 
-	GetMesh()->SetSimulatePhysics(false);
-	GetMesh()->SetEnableGravity(false);
+	//GetMesh()->SetSimulatePhysics(true);
+	//GetMesh()->SetEnableGravity(true);
 
-	GetCharacterMovement()->GravityScale = 0.0f;
+	GetCharacterMovement()->GravityScale = 1.0f;
 
-	CameraBoom->bDoCollisionTest = false;
+	CameraBoom->bDoCollisionTest = true;
 	SetCameraData(CameraDataManager[0]);
 }
 
@@ -1244,7 +1243,7 @@ void APlayerCharacter::SetCameraData(const UCameraData* CameraData)
 	CameraBoom->SocketOffset = CameraData->SocketOffset;
 
 
-	FollowCamera->SetWorldRotation(CameraData->Rot);
+	FollowCamera->SetRelativeRotation(CameraData->Rot);
 }
 
 void APlayerCharacter::TakeItem(const FInputActionValue& Value)

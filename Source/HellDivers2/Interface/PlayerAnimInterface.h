@@ -31,5 +31,4 @@ public:
 	virtual bool IsRightButton() = 0;
 	virtual bool IsSucceededStratagem() = 0;
 	virtual bool IsPullingPin() = 0;
-	virtual void Summoned() = 0;
 };

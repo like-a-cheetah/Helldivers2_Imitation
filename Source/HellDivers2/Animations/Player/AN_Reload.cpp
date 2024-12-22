@@ -7,6 +7,8 @@
 
 void UAN_Reload::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	Super::Notify(MeshComp, Animation, EventReference);
+
 	IGunInterface *ItemInterface = Cast<IGunInterface>(MeshComp->GetOwner());
 	if (ItemInterface)
 	{
