@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 
 #include "LoadOutWidget.h"
+#include "StratagemImgC.h"
 
 void UW_SettingStratagem::NativeConstruct()
 {
@@ -23,7 +24,7 @@ void UW_SettingStratagem::SetLoadWidget(ULoadOutWidget* In_LoadOutWidget)
 void UW_SettingStratagem::SetStratagem()
 { 
     if (SelectedBtnN && SelectedBtnN->GetChildrenCount() > 0) {
-        LoadOutWidget->SetStratagemData(SelectedBtnN->GetChildAt(0));
+        LoadOutWidget->SetStratagemData(SelectedBtnN);
     }
 }
 
@@ -43,6 +44,10 @@ void UW_SettingStratagem::FindAllStratagemBtns(UWidget* ParentWidget)
     {
         Btn->OnClicked.AddDynamic(this, &UW_SettingStratagem::SetStratagem);
         Btn->OnPressed.AddDynamic(this, &UW_SettingStratagem::SetBtnN);
+        
+        UStratagemImgC* BtnImg = Cast<UStratagemImgC>(Btn->GetChildAt(0));
+        if (BtnImg) BtnImg->SetImage();
+
         Btns.Add(Btn);
     }
 

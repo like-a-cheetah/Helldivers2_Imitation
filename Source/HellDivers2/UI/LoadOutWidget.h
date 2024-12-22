@@ -40,6 +40,7 @@ protected:
     TObjectPtr<class UStratagemImgC> Btn_Img4;
 
     TArray<TObjectPtr<class UStratagemImgC>> BtnImgs;
+    TArray<TObjectPtr<class UButton>> BroughtBtn;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
     TObjectPtr<class UButton> Btn_Ready;
@@ -64,5 +65,5 @@ public:
     UFUNCTION()
     void ExitSettingStratagem();
 
-    void SetStratagemData(UWidget* StratagemImg);
+    void SetStratagemData(class UButton* StratagemBtn);
 };

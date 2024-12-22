@@ -93,20 +93,29 @@ void ULoadOutWidget::BtnFunc()
 	PlayAnimation(SettingAnimation);
 }
 
-void ULoadOutWidget::SetStratagemData(UWidget* StratagemImg)
+void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 {
-	UStratagemImgC* NewImg = Cast<UStratagemImgC>(StratagemImg);
+	UWidget* ChildW = StratagemBtn->GetChildAt(0);
+	UStratagemImgC* NewImg = Cast<UStratagemImgC>(ChildW);
 	if (!NewImg) return;
 
 	if (NextSetBtnN <= 3) {
 		BtnImgs[NextSetBtnN]->SetBrushResourceObject(NewImg->Brush.GetResourceObject());
 		BtnImgs[NextSetBtnN]->SetStratagemData(NewImg->GetStratagemData());
 		BtnImgs[NextSetBtnN++]->SetVisibility(ESlateVisibility::Visible);
+
+		BroughtBtn.Add(StratagemBtn);
+
+		StratagemBtn->SetIsEnabled(false);
 	}
 	else {
 		BtnImgs[ClickedBtnN]->SetBrushResourceObject(NewImg->Brush.GetResourceObject());
 		BtnImgs[ClickedBtnN]->SetStratagemData(NewImg->GetStratagemData());
-		BtnImgs[ClickedBtnN]->SetVisibility(ESlateVisibility::Visible);
+
+		BroughtBtn[ClickedBtnN]->SetIsEnabled(true);
+		BroughtBtn[ClickedBtnN] = StratagemBtn;
+
+		StratagemBtn->SetIsEnabled(false);
 	}
 
 	if(NextSetBtnN == 4) PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);

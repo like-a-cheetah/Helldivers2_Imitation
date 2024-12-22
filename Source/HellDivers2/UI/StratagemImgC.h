@@ -13,7 +13,7 @@ UCLASS()
 class HELLDIVERS2_API UStratagemImgC : public UImage
 {
 	GENERATED_BODY()
-	
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stratagem")
 	TObjectPtr<class UStratagemData> SData;
@@ -21,4 +21,5 @@ protected:
 public:
 	FORCEINLINE class UStratagemData* GetStratagemData() { return SData; }
 	FORCEINLINE void SetStratagemData(class UStratagemData* InSData) { SData = InSData; }
+	void SetImage();
 };
