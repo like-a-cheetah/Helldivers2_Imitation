@@ -52,6 +52,7 @@ void AHellPodPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	SkelMeshComp->HideBoneByName(FName(TEXT("hatch")), EPhysBodyOp::PBO_None);
 	SkelMeshComp->PlayAnimation(MT_RecallPlayer, false);
 	SkelMeshComp->SetGenerateOverlapEvents(false);
+	SkelMeshComp->SetCollisionProfileName(TEXT("BlockAll"));
 
 	OnPlayerArrive.Execute();
 }
