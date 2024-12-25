@@ -30,6 +30,7 @@
 #include "UI/W_StratagemNotice.h"
 #include "UI/W_StratagemCondition.h"
 #include "Stratagem/StratagemData.h"
+#include "Interface/ObjectInterface.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -164,6 +165,9 @@ void APlayerCharacter::InputActionFind()
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> IA_EscapeRef(TEXT("/Script/EnhancedInput.InputAction'/Game/HellDivers2/Characters/Player/Input/UIInteract/IA_Esc.IA_Esc'"));
 	if (IA_EscapeRef.Object)	IA_Escape = IA_EscapeRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_InteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/HellDivers2/Characters/Player/Input/IA_Interact.IA_Interact'"));
+	if (IA_InteractRef.Object)	IA_Interact = IA_InteractRef.Object;
 }
 
 void APlayerCharacter::MontageFind() {
@@ -406,6 +410,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	EnhancedInputComponent->BindAction(IA_InputStratagemBallS, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
 	EnhancedInputComponent->BindAction(IA_InputStratagemBallD, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
 	EnhancedInputComponent->BindAction(IA_InputStratagemBallA, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
+	EnhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &APlayerCharacter::Interact);
+
 
 	EnhancedInputComponent->BindAction(IA_Escape, ETriggerEvent::Started, this, &APlayerCharacter::Esc);
 }
@@ -560,6 +566,15 @@ void APlayerCharacter::PlayerRebirth()
 void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
 {
 	Stratagems.Add(SData);
+}
+
+void APlayerCharacter::EnterHellpodBridge()
+{
+}
+
+void APlayerCharacter::SetNearbyInteractable(AActor* Object)
+{
+	NearbyItem = Object;
 }
 
 void APlayerCharacter::SetStratagemConditionWidget(UUserWidget* InStratagemNoticeWidget)
@@ -938,6 +953,15 @@ void APlayerCharacter::SetImpactPoint()
 	else
 	{
 		ImpactWidget->SetHiddenInGame(true);
+	}
+}
+
+void APlayerCharacter::Interact()
+{
+	IObjectInterface* Object = Cast<IObjectInterface>(NearbyItem);
+	if (Object)
+	{
+		Object->Interact(this);
 	}
 }
 

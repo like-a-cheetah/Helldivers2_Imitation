@@ -26,4 +26,8 @@ public:
 	virtual void Recoil(float Pitch, float Yaw) = 0;
 	virtual void GetCurrentZ() = 0;
 	virtual void Summoned() = 0;
+	virtual void SetNearbyInteractable(AActor* Object) = 0;
+	
+	//각 오브젝트의 Interact에 따라 동작할 함수
+	virtual void EnterHellpodBridge() = 0;
 };

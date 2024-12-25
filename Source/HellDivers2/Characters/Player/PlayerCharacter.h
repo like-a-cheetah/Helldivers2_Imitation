@@ -110,6 +110,8 @@ private:
 	TObjectPtr<class UInputAction> IA_InputStratagemBallA;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> IA_Escape;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> IA_Interact;
 
 protected:
 	void Move(const FInputActionValue& Value);
@@ -235,6 +237,9 @@ private:
 
 	TArray<FString> GunClassPaths;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = true))
+	TObjectPtr<AActor> NearbyItem;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	TArray<class AItem*> GroundedItems;
@@ -283,6 +288,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = Moving)
 	void SetImpactPoint();
 
+	void Interact();
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
@@ -304,6 +310,8 @@ public:
 	// IPlayerControl을(를) 통해 상속됨
 	void GetCurrentZ() override;
 	void Summoned() override;
+	void SetNearbyInteractable(AActor* Object) override;
+	void EnterHellpodBridge() override;
 
 // 위젯 관련
 protected:
