@@ -280,8 +280,8 @@ void APlayerCharacter::InitCameraSet()
 
 	SceneCaptureComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
 	SceneCaptureComp->SetupAttachment(RootComponent);
-	SceneCaptureComp->SetWorldRotation(FRotator(0.0f, 170.0f, 30.0f));
-	SceneCaptureComp->SetRelativeLocation(FVector(170.0, -30.0, 0));
+	SceneCaptureComp->SetRelativeLocation(FVector(170.0f, 78.0f, 18.0f));
+	SceneCaptureComp->SetRelativeRotation(FRotator(5.0f, 205.0f, 3.0f));
 	SceneCaptureComp->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	SceneCaptureComp->ProjectionType = ECameraProjectionMode::Orthographic;
 	SceneCaptureComp->OrthoWidth = 170.0f;
@@ -293,8 +293,6 @@ void APlayerCharacter::InitCameraSet()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SetStratagemFromGInst();
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -303,28 +301,34 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	if (!DiversController)
 		UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
 
-	//GetCapsuleComponent()->SetSimulatePhysics(false);
-	//GetCapsuleComponent()->SetEnableGravity(false);
-
-	//GetMesh()->SetSimulatePhysics(false);
-	//GetMesh()->SetEnableGravity(false);
-
-	GetCharacterMovement()->GravityScale = 0.0f;
-
-	CameraBoom->TargetArmLength = 1300.0f;
-	CameraBoom->bDoCollisionTest = false;
-	
-	SceneCaptureComp->ShowOnlyActorComponents(this, true);
-
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(DiversController->GetLocalPlayer()))
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 
-	SetStratagemFromGInst();
+	FString LevelName = GetLevel()->GetOuter()->GetName();
+	if (LevelName == "InGameTestmap")
+	{
+		SetStratagemFromGInst();
+
+		//GetCapsuleComponent()->SetSimulatePhysics(false);
+		//GetCapsuleComponent()->SetEnableGravity(false);
+
+		//GetMesh()->SetSimulatePhysics(false);
+		//GetMesh()->SetEnableGravity(false);
+
+		GetCharacterMovement()->GravityScale = 0.0f;
+
+		CameraBoom->TargetArmLength = 1300.0f;
+		CameraBoom->bDoCollisionTest = false;
+	}
+	else
+	{
+		Summoned();
+		SceneCaptureComp->ShowOnlyActorComponents(this, true);
+	}
 }
 
 void APlayerCharacter::Summoned()	//Rebirth 애니메이션 재생 후 호출 될 함수
 {
-
 	//GetCapsuleComponent()->SetSimulatePhysics(true);
 	//GetCapsuleComponent()->SetEnableGravity(true);
 
@@ -539,15 +543,11 @@ void APlayerCharacter::SetupHUDWidget(UUserWidget* InHUDWidget)
 
 void APlayerCharacter::SetStratagemFromGInst()
 {
-	FString LevelName = GetLevel()->GetOuter()->GetName();
-	if (LevelName == "InGameTestmap")
+	UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
+	if (GInst)
 	{
-		UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
-		if (GInst)
-		{
-			Stratagems = GInst->GetTempStratagemsD();
-			OnStratagemSet.Execute(Stratagems);
-		}
+		Stratagems = GInst->GetTempStratagemsD();
+		//if(OnStratagemSet.IsBound()) OnStratagemSet.Execute(Stratagems);
 	}
 }
 
@@ -582,7 +582,9 @@ void APlayerCharacter::SetStratagemsNoticeWidget(UUserWidget* InStratagemNoticeW
 	UW_StratagemNotice* W_StratagemNotice = Cast<UW_StratagemNotice>(InStratagemNoticeWidget);
 	if (W_StratagemNotice)
 	{
-		OnStratagemSet.BindUObject(W_StratagemNotice, &UW_StratagemNotice::SetStratagemWidget);
+		W_StratagemNotice->SetStratagemWidget(Stratagems);
+		/*OnStratagemSet.BindUObject(W_StratagemNotice, &UW_StratagemNotice::SetStratagemWidget);
+		if (OnStratagemSet.IsBound()) OnStratagemSet.Execute(Stratagems);*/
 	}
 }
 
@@ -1075,8 +1077,10 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 				bAllInactive = false;
 
 				const uint8 MacroN = Stratagem->Macro.Num();
-				if (MacroIndex == MacroN - 1)
+				if (MacroIndex == MacroN - 1)	//입력한 키가 마지막 매크로일 경우
 				{
+					Stratagem->CorrectMacro(MacroIndex);
+
 					bSucceededStratagem = true;
 								
 					UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoopEnter, GetActorLocation());
@@ -1094,9 +1098,12 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 								
 					return;
 				}
+				else //옳은 키를 입력했을 때
+				{
+					Stratagem->CorrectMacro(MacroIndex);
+				}
 			}
 			else Stratagem->SetbActive(false);
-
 		}
 	}
 

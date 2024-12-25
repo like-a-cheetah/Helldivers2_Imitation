@@ -20,6 +20,8 @@ UW_StratagemCondition::UW_StratagemCondition(const FObjectInitializer& ObjectIni
 	if (TextureRef3.Succeeded()) Arrow.Add(TextureRef3.Object);
 	static ConstructorHelpers::FObjectFinder<UTexture2D> TextureRef4(TEXT("/Script/Engine.Texture2D'/Game/HellDivers2/UI/Source/Stratagem/Up.Up'"));
 	if (TextureRef4.Succeeded()) Arrow.Add(TextureRef4.Object);
+
+	CorrectColor = FColor::FromHex(TEXT("050505CF"));
 }
 
 void UW_StratagemCondition::NativeConstruct()
@@ -52,6 +54,7 @@ void UW_StratagemCondition::SetData(UStratagemData* InData)
 {
 	Data = InData;
 	Data->OnActiveWidget.BindUObject(this, &UW_StratagemCondition::SetInactiveW);
+	Data->OnCorrectMacro.BindUObject(this, &UW_StratagemCondition::SetArrowColor);
 }
 
 void UW_StratagemCondition::ShowWidget(bool bShow)
@@ -73,6 +76,7 @@ void UW_StratagemCondition::SetInactiveW(bool bActive)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Blind hid"));
 		InactiveW->SetVisibility(ESlateVisibility::Hidden);
+		InitAllArrowColor();
 	}
 	else
 	{
@@ -95,12 +99,23 @@ void UW_StratagemCondition::SetMacro()
 		}
 	}
 }
-
-void UW_StratagemCondition::SetArrowImg(int index)
+void UW_StratagemCondition::SetArrowColor(int n)
 {
-	UImage* Img = Cast<UImage>(MacroBox->GetChildAt(index));
+	UImage* Img = Cast<UImage>(MacroBox->GetChildAt(n));
 	if (Img)
 	{
-		//색 바꾸기
+		Img->SetColorAndOpacity(CorrectColor);
+	}
+}
+
+void UW_StratagemCondition::InitAllArrowColor()
+{
+	for (int i = 0; i < Data->Macro.Num(); i++)
+	{
+		UImage* Img = Cast<UImage>(MacroBox->GetChildAt(i));
+		if (Img)
+		{
+			Img->SetColorAndOpacity(FLinearColor::White);
+		}
 	}
 }

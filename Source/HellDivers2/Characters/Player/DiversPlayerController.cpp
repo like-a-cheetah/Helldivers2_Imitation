@@ -37,6 +37,7 @@ void ADiversPlayerController::BeginPlay()
 		if (LoadOutWidget)
 		{
 			LoadOutWidget->SetDesiredSizeInViewport(FVector2D(500.0f, 500.0f));
+			LoadOutWidget->SetPositionInViewport(FVector2D(50.0, 200.0f));
 			LoadOutWidget->AddToViewport();
 		}
 	}

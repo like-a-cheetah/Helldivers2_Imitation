@@ -53,6 +53,9 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<class UImage>> Macro;
 
+	FColor CorrectColor;
+
 	void SetMacro();
-	void SetArrowImg(int index);
+	void SetArrowColor(int n);
+	void InitAllArrowColor();
 };

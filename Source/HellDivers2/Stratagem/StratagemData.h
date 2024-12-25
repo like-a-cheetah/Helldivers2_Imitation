@@ -11,6 +11,7 @@
  */
 
 DECLARE_DELEGATE_OneParam(FOnActiveStratagemDelegate, bool /*bActive*/);
+DECLARE_DELEGATE_OneParam(FOnCorrectMacro, int /*IndexN*/);
 
 UCLASS()
 class HELLDIVERS2_API UStratagemData : public UPrimaryDataAsset
@@ -34,9 +35,12 @@ public:
 	TArray<uint8> Macro;
 
 	FOnActiveStratagemDelegate OnActiveWidget;
+	FOnCorrectMacro OnCorrectMacro;
 
 	void SetbActive(bool InbActive);
 	FORCEINLINE bool IsActive() { return bActive; }
+
+	void CorrectMacro(int n);
 
 private:
 	uint8 bActive : 1;

@@ -35,7 +35,7 @@ struct FTakeItemDelegateWrapper
 
 DECLARE_DELEGATE_OneParam(FOnActiveStratagemDelegate, bool /*bActive*/);
 DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
-DECLARE_DELEGATE_OneParam(FOnStratagemSet, TArray<class UStratagemData*> /*Stratagems*/);
+//DECLARE_DELEGATE_OneParam(FOnStratagemSet, TArray<class UStratagemData*> /*Stratagems*/);
 DECLARE_DELEGATE_OneParam(FOnShowConditionWidget, bool /*bShow*/);
 //ECLARE_DELEGATE_OneParam(FOnSetActiveW, bool /*bActive*/);
 
@@ -343,7 +343,7 @@ private:
 
 	//FOnActiveStratagemDelegate OnActiveStratagem;
 	FOnCloseStratagemSettingWidget OnCloseStratagemSettingWidget;
-	FOnStratagemSet OnStratagemSet;
+	//FOnStratagemSet OnStratagemSet;
 	TArray<FOnShowConditionWidget> OnShowConditionDelegates;
 	//TArray<FOnSetActiveW> OnSetActiveWDelegates;
 

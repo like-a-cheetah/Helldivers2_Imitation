@@ -31,18 +31,25 @@ AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Cont
 		StartRot = PlayerStart->GetActorRotation();
 	}
 
-	StartPos.Z += 20000.0f;
+	FString LevelName = GetLevel()->GetOuter()->GetName();
+	if (LevelName == "InGameTestmap") StartPos.Z += 20000.0f;
 
     return Super::ChoosePlayerStart_Implementation(Controller);
 }
 
 void AHelldviers2ModeBase::BeginPlay()
 {
+	Super::BeginPlay();
+
 	ADiversPlayerController* PlayerController = Cast<ADiversPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 
 	APlayerCharacter* PlayerChar = GetWorld()->SpawnActor<APlayerCharacter>(StartPos, StartRot);
 	PlayerController->Possess(PlayerChar);
 
-	AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
-	HellPod->AttchPlayer(PlayerChar);
+	FString LevelName = GetLevel()->GetOuter()->GetName();
+	if (LevelName == "InGameTestmap")
+	{
+		AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
+		HellPod->AttchPlayer(PlayerChar);
+	}
 }

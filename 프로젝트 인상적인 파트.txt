@@ -1,9 +1,6 @@
 블로그 만들기
 
-적을 내용
 ai predict
-
-Meta = BindWidget
 
 렌더 타겟 만든 방법 적기(즐찾에 있음)
 
