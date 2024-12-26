@@ -66,4 +66,7 @@ public:
     void ExitSettingStratagem();
 
     void SetStratagemData(class UButton* StratagemBtn);
+
+    UFUNCTION()
+    void VisibleWidget(bool bShow);
 };

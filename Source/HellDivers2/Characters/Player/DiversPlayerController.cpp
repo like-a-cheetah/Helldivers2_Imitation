@@ -31,7 +31,12 @@ void ADiversPlayerController::BeginPlay()
 	SetInputMode(GameOnlyInputMode);
 
 	FString LevelName = GetLevel()->GetOuter()->GetName();
-	if (LevelName == "PlayerTestmap")
+	if (LevelName == "InGameTestmap")
+	{
+		HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+		if (HUDWidget) HUDWidget->AddToViewport();
+	}
+	else
 	{
 		LoadOutWidget = CreateWidget<ULoadOutWidget>(this, LoadOutWidgetClass);
 		if (LoadOutWidget)
@@ -41,9 +46,22 @@ void ADiversPlayerController::BeginPlay()
 			LoadOutWidget->AddToViewport();
 		}
 	}
-	else if (LevelName == "InGameTestmap")
+}
+
+void ADiversPlayerController::SetMouseCursor(bool bActive)
+{
+	if (bActive)
 	{
-		HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
-		if (HUDWidget) HUDWidget->AddToViewport();
+		bShowMouseCursor = true;
+		FInputModeGameAndUI InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock); // 마우스 고정 해제
+		SetInputMode(InputMode);
+	}
+	else
+	{
+		bShowMouseCursor = false;
+		FInputModeGameAndUI InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture); // 마우스 고정 해제
+		SetInputMode(InputMode);
 	}
 }

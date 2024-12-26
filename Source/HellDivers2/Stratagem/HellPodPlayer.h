@@ -41,10 +41,18 @@ private:
 
 	FOnPlayerArrive OnPlayerArrive;
 
+	float InputX;
+	float InputY;
+	FVector MovementDirection;
 
 public:
 	void AttchPlayer(class APlayerCharacter* Player);
 
 private:
 	void CheckToLanding();
+
+	UFUNCTION()
+	void MoveX(float Value);
+	UFUNCTION()
+	void MoveY(float Value);
 };

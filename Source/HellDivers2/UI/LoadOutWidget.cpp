@@ -121,6 +121,12 @@ void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 	if(NextSetBtnN == 4) PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
 }
 
+void ULoadOutWidget::VisibleWidget(bool bShow)
+{
+	if (bShow) SetVisibility(ESlateVisibility::Visible);
+	else SetVisibility(ESlateVisibility::Hidden);
+}
+
 void ULoadOutWidget::ExitSettingStratagem()
 {
 	PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);

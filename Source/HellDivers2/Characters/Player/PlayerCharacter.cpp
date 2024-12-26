@@ -35,7 +35,8 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	bActiveLookAction = true;
+	
 	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationRoll = false;
@@ -233,6 +234,11 @@ void APlayerCharacter::MontageFind() {
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerRebirthRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_RebirthPlayer.MT_RebirthPlayer'"));
 	if (MT_PlayerRebirthRef.Object)	MT_PlayerRebirth = MT_PlayerRebirthRef.Object;
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerReadyRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_PlayerReady.MT_PlayerReady'"));
+	if (MT_PlayerReadyRef.Object)	MT_PlayerReady = MT_PlayerReadyRef.Object;
+
+
+
 }
 
 void APlayerCharacter::SoundWaveFind()
@@ -297,6 +303,15 @@ void APlayerCharacter::InitCameraSet()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FString LevelName = GetLevel()->GetOuter()->GetName();
+	if (LevelName == "InGameTestmap")
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+	}
+	else
+	{
+	}
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -311,18 +326,14 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	FString LevelName = GetLevel()->GetOuter()->GetName();
 	if (LevelName == "InGameTestmap")
 	{
-		SetStratagemFromGInst();
-
-		//GetCapsuleComponent()->SetSimulatePhysics(false);
-		//GetCapsuleComponent()->SetEnableGravity(false);
-
-		//GetMesh()->SetSimulatePhysics(false);
-		//GetMesh()->SetEnableGravity(false);
+		bActiveLookAction = false;
+		CameraBoom->bDoCollisionTest = false;
+		FollowCamera->SetRelativeLocation(FVector(600.0, 0.0f, 300.0f));
+		FollowCamera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
 
 		GetCharacterMovement()->GravityScale = 0.0f;
 
-		CameraBoom->TargetArmLength = 1300.0f;
-		CameraBoom->bDoCollisionTest = false;
+		SetStratagemFromGInst();
 	}
 	else
 	{
@@ -333,16 +344,15 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 
 void APlayerCharacter::Summoned()	//Rebirth 애니메이션 재생 후 호출 될 함수
 {
-	//GetCapsuleComponent()->SetSimulatePhysics(true);
-	//GetCapsuleComponent()->SetEnableGravity(true);
+	bActiveLookAction = true;
+	CameraBoom->bDoCollisionTest = true;
+	FollowCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	FollowCamera->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	SetCameraData(CameraDataManager[0]);
 
-	//GetMesh()->SetSimulatePhysics(true);
-	//GetMesh()->SetEnableGravity(true);
-
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCharacterMovement()->GravityScale = 1.0f;
 
-	CameraBoom->bDoCollisionTest = true;
-	SetCameraData(CameraDataManager[0]);
 }
 
 // Called every frame
@@ -543,6 +553,9 @@ void APlayerCharacter::SetupHUDWidget(UUserWidget* InHUDWidget)
 		// 플레이어 레벨에 따라서 HUD에서 보여줄 버튼의 가짓수 결정하는 방식 만들기?
 		// LoadOutWidget->SetValiableStratagems(ValiableStratagemsData);
 
+		OnShowLoadOutWidget.AddUObject(LoadOutWidget, &ULoadOutWidget::VisibleWidget);
+		OnShowLoadOutWidget.AddUObject(DiversController, &ADiversPlayerController::SetMouseCursor);
+
 		OnCloseStratagemSettingWidget.BindUObject(LoadOutWidget, &ULoadOutWidget::ExitSettingStratagem);
 	}
 }
@@ -570,11 +583,35 @@ void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
 
 void APlayerCharacter::EnterHellpodBridge()
 {
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	FVector StartLoc = NearbyObj->GetActorLocation();
+	FVector ForwardVec = -(NearbyObj->GetActorRightVector());
+	StartLoc += ForwardVec * 200.0f;
+	StartLoc.Z += 95.0f;
+
+	FRotator GoalRot = NearbyObj->GetActorRotation();
+	GoalRot.Yaw += 90.0f;
+
+	SetActorRotation(GoalRot);
+	SetActorLocation(StartLoc);
+
+	FOnMontageEnded OnMontageEnd;
+	OnMontageEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) {
+		OnShowLoadOutWidget.Broadcast(true);
+
+		AttachToActor(NearbyObj, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hellpod_pad_Socket"));
+
+		GetCharacterMovement()->GravityScale = 0.0f;
+		});
+
+	PlayAnimMontage(MT_PlayerReady);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnMontageEnd, MT_PlayerReady);
 }
 
 void APlayerCharacter::SetNearbyInteractable(AActor* Object)
 {
-	NearbyItem = Object;
+	NearbyObj = Object;
 }
 
 void APlayerCharacter::SetStratagemConditionWidget(UUserWidget* InStratagemNoticeWidget)
@@ -638,12 +675,15 @@ void APlayerCharacter::MoveEnd(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-	
-	rotateValue.X += LookAxisVector.X;
-	rotateValue.Y += LookAxisVector.Y;
-	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(LookAxisVector.Y);
+	if (bActiveLookAction)
+	{
+		FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+		rotateValue.X += LookAxisVector.X;
+		rotateValue.Y += LookAxisVector.Y;
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
+	}
 }
 
 void APlayerCharacter::Run(const FInputActionValue& Value)
@@ -958,7 +998,7 @@ void APlayerCharacter::SetImpactPoint()
 
 void APlayerCharacter::Interact()
 {
-	IObjectInterface* Object = Cast<IObjectInterface>(NearbyItem);
+	IObjectInterface* Object = Cast<IObjectInterface>(NearbyObj);
 	if (Object)
 	{
 		Object->Interact(this);

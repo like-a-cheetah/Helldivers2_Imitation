@@ -38,6 +38,8 @@ DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
 //DECLARE_DELEGATE_OneParam(FOnStratagemSet, TArray<class UStratagemData*> /*Stratagems*/);
 DECLARE_DELEGATE_OneParam(FOnShowConditionWidget, bool /*bShow*/);
 //ECLARE_DELEGATE_OneParam(FOnSetActiveW, bool /*bActive*/);
+//DECLARE_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 
 UCLASS()
 class HELLDIVERS2_API APlayerCharacter : public ACharacter, public IPlayerAnimInterface, public IPlayerControl, public ICharacterHUDInterface, public IStratagemInterface
@@ -163,6 +165,8 @@ protected:
 	TObjectPtr<UAnimMontage> MT_PullingPin;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TObjectPtr<UAnimMontage> MT_PlayerRebirth;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_PlayerReady;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TArray<TObjectPtr<UAnimMontage>> MT_Divings;
@@ -219,6 +223,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	TObjectPtr<class USceneCaptureComponent2D> SceneCaptureComp;
 
+	uint8 bActiveLookAction : 1;
+
 private:
 	void InitCameraSet();
 
@@ -238,7 +244,7 @@ private:
 	TArray<FString> GunClassPaths;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<AActor> NearbyItem;
+	TObjectPtr<AActor> NearbyObj;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
@@ -354,6 +360,7 @@ private:
 	//FOnStratagemSet OnStratagemSet;
 	TArray<FOnShowConditionWidget> OnShowConditionDelegates;
 	//TArray<FOnSetActiveW> OnSetActiveWDelegates;
+	FOnShowLoadOutWidget OnShowLoadOutWidget;
 
 	void SetStratagemFromGInst();
 

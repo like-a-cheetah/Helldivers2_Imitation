@@ -53,9 +53,9 @@ void ABridgeHellpod::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
 	}
 }
 
-void ABridgeHellpod::Interact(AActor* Player)
+void ABridgeHellpod::Interact(AActor* Actor)
 {
-	IPlayerControl* Player = Cast<IPlayerControl>(Player);
+	IPlayerControl* Player = Cast<IPlayerControl>(Actor);
 	if (Player)
 	{
 		SkelMeshComp->PlayAnimation(MT_LockHellpod, false);

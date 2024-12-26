@@ -17,6 +17,8 @@ class HELLDIVERS2_API ADiversPlayerController : public APlayerController
 public:
 	ADiversPlayerController();
 
+	void SetMouseCursor(bool bActive);
+
 protected:
 	virtual void BeginPlay() override;
 

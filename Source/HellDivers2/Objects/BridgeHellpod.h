@@ -41,5 +41,5 @@ private:
 
 protected:
 	// IObjectInterface을(를) 통해 상속됨
-	void Interact(AActor* Player) override;
+	void Interact(AActor* Actor) override;
 };

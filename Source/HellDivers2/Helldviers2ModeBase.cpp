@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Characters/Player/DiversPlayerController.h"
 #include "Characters/Player/PlayerCharacter.h"
@@ -21,35 +22,40 @@ AHelldviers2ModeBase::AHelldviers2ModeBase()
 
 AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Controller)
 {
-	StartRot = FRotator(0.0f, 0.0f, 0.0f);
-	StartPos = FVector(0.0f, 0.0f, 0.0f);
-
     APlayerStart* PlayerStart = Cast<APlayerStart>(FindPlayerStart(Controller, TEXT("test")));
-	if (PlayerStart)
-	{
-		StartPos = PlayerStart->GetActorLocation();
-		StartRot = PlayerStart->GetActorRotation();
-	}
+	PlayerStart->GetCapsuleComponent()->SetMobility(EComponentMobility::Movable);
 
 	FString LevelName = GetLevel()->GetOuter()->GetName();
-	if (LevelName == "InGameTestmap") StartPos.Z += 20000.0f;
+	if (LevelName == "InGameTestmap")
+	{
+		StartPos = PlayerStart->GetActorLocation();
+		StartPos.Z += 20000.0f;
+		PlayerStart->SetActorLocation(StartPos);
+		StartRot = PlayerStart->GetActorRotation();
+		StartRot.Yaw += 60.0f;
+	}
+	else
+	{
+	}
 
-    return Super::ChoosePlayerStart_Implementation(Controller);
+    return PlayerStart;
 }
 
 void AHelldviers2ModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ADiversPlayerController* PlayerController = Cast<ADiversPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-
-	APlayerCharacter* PlayerChar = GetWorld()->SpawnActor<APlayerCharacter>(StartPos, StartRot);
-	PlayerController->Possess(PlayerChar);
-
-	FString LevelName = GetLevel()->GetOuter()->GetName();
-	if (LevelName == "InGameTestmap")
+	ADiversPlayerController* PlayerController = Cast<ADiversPlayerController>(GetWorld()->GetFirstPlayerController());
+	APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(PlayerController->GetPawn());
+	if (PlayerChar)
 	{
-		AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
-		HellPod->AttchPlayer(PlayerChar);
+		PlayerController->Possess(PlayerChar);
+
+		FString LevelName = GetLevel()->GetOuter()->GetName();
+		if (LevelName == "InGameTestmap")
+		{
+			AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
+			HellPod->AttchPlayer(PlayerChar);
+		}
 	}
 }

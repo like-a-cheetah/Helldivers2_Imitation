@@ -5,8 +5,8 @@
 
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimMontage.h"
-#include "Camera/CameraComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/InputComponent.h"
 
 #include "Characters/Player/PlayerCharacter.h"
 
@@ -33,6 +33,10 @@ void AHellPodPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	SkelMeshComp->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, -10000.0f));
+
+	EnableInput(GetWorld()->GetFirstPlayerController());
+	InputComponent->BindAxis("MoveX", this, &AHellPodPlayer::MoveX);
+	InputComponent->BindAxis("MoveY", this, &AHellPodPlayer::MoveY);
 
 	if(StartAnim)
 		SkelMeshComp->PlayAnimation(StartAnim, false);
@@ -65,6 +69,24 @@ void AHellPodPlayer::AttchPlayer(APlayerCharacter* Player)
 	OnPlayerArrive.BindUObject(Player, &APlayerCharacter::PlayerRebirth);
 }
 
+void AHellPodPlayer::MoveX(float Value)
+{
+	if (!CheckOnce)
+	{
+		float ForceMagnitude = Value * 200000.0f;
+		SkelMeshComp->AddForce(FVector(0.0f, ForceMagnitude, 0.0f));
+	}
+}
+
+void AHellPodPlayer::MoveY(float Value)
+{
+	if (!CheckOnce)
+	{
+		float ForceMagnitude = Value * 200000.0f;
+		SkelMeshComp->AddForce(FVector(ForceMagnitude, 0.0f, 0.0f));
+	}
+}
+
 void AHellPodPlayer::CheckToLanding()
 {
 	FVector StartPos = GetActorLocation();
@@ -95,4 +117,5 @@ void AHellPodPlayer::CheckToLanding()
 		SkelMeshComp->SetLinearDamping(1.5f);
 	}
 }
+
 
