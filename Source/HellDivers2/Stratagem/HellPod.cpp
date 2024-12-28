@@ -13,6 +13,8 @@ AHellpod::AHellpod()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	SetRootComponent(HellpodMesh);
+
 	HellpodMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HellpodMesh"));
 	HellpodMesh->SetCollisionProfileName(TEXT("Hellpod"));
 	HellpodMesh->SetSimulatePhysics(true);
@@ -81,7 +83,6 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 void AHellpod::SpawnAttachment()
 {
 	HellpodMesh->BreakConstraint(FVector(0.0f, 0.0f, 35000.0f), FVector(0.0f, 0.0f, 35000.0f), TEXT("TOP_LID"));
-	HellpodMesh->PlayAnimation(MT_RecallPlayer, false);
 }
 
 void AHellpod::CheckToLanding()

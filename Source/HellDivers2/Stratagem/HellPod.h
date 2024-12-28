@@ -23,6 +23,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<USkeletalMeshComponent> AttachMesh;
+
 protected:
 	UFUNCTION()
 	virtual void OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
@@ -33,6 +36,9 @@ protected:
 
 	bool CheckOnce;
 
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> MT_RecallPlayer;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", Meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<USkeletalMeshComponent> HellpodMesh;
 
@@ -42,8 +48,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAnimSequence> StartAnim;
-	UPROPERTY()
-	TObjectPtr<UAnimMontage> MT_RecallPlayer;
 	UPROPERTY()
 	TObjectPtr<UAnimMontage> MT_ReadyToRanding;
 

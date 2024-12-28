@@ -602,6 +602,8 @@ void APlayerCharacter::EnterHellpodBridge()
 	SetActorRotation(GoalRot);
 	SetActorLocation(StartLoc);
 
+	PlayAnimMontage(MT_PlayerReady);
+
 	FOnMontageEnded OnMontageEnd;
 	OnMontageEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) {
 		OnShowLoadOutWidget.Broadcast(true);
@@ -743,18 +745,21 @@ void APlayerCharacter::LeftButtonStarted()
 		HandleItem->GetSkelMeshComp()->SetNotifyRigidBodyCollision(true);
 		ThrowItem();
 
-		HandleItem = PreItem;
-		FOnMontageEnded MontageEnded;
-		MontageEnded.BindLambda([this](UAnimMontage* AnimMontage, bool Interrupted)
-			{
-				if (!bRightButton)
-					SetLookingForward(false);
+		if (PreItem)
+		{
+			HandleItem = PreItem;
+			FOnMontageEnded MontageEnded;
+			MontageEnded.BindLambda([this](UAnimMontage* AnimMontage, bool Interrupted)
+				{
+					if (!bRightButton)
+						SetLookingForward(false);
 
-				AttachToSocket(HandleItem, HandSocketName);
-				PlayAnimMontage(HandleItem->GetTakeOutMontage());
-			}
-		);
-		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(MontageEnded);
+					AttachToSocket(HandleItem, HandSocketName);
+					PlayAnimMontage(HandleItem->GetTakeOutMontage());
+				}
+			);
+			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(MontageEnded);
+		}
 
 		bSucceededStratagem = false;
 	}
@@ -1158,7 +1163,7 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 					SetLookingForward(false);
 								
 					//보류. 이방법 좀 더 생각하기, 이 액터 스폰할 때 TSubclass로 만들고 AItem 타입 변수로 받는데
-					Cast<AStratagemBall>(HandleItem)->SetStratagem(TestStratagemC);
+					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem());
 
 					for (int i = 0; i < Stratagems.Num(); i++)
 					{

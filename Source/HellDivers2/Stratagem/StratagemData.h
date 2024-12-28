@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+
+#include "Stratagem.h"
+
 #include "StratagemData.generated.h"
 
 /**
@@ -23,7 +26,7 @@ public:
 	FName Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class AStratagem> CStratagem;
+	TSubclassOf<AStratagem> CStratagem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UTexture2D> Texture;
@@ -41,6 +44,8 @@ public:
 	FORCEINLINE bool IsActive() { return bActive; }
 
 	void CorrectMacro(int n);
+
+	TSubclassOf<AStratagem> GetCStratagem() { return CStratagem; }
 
 private:
 	uint8 bActive : 1;

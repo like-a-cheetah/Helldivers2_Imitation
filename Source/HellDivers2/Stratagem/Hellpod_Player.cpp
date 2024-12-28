@@ -8,7 +8,6 @@
 
 AHellpod_Player::AHellpod_Player()
 {
-
 }
 
 void AHellpod_Player::BeginPlay()
@@ -33,6 +32,8 @@ void AHellpod_Player::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent
 void AHellpod_Player::SpawnAttachment()
 {
 	Super::SpawnAttachment();
+
+	HellpodMesh->PlayAnimation(MT_RecallPlayer, false);
 
 	if (OnPlayerArrive.IsBound()) OnPlayerArrive.Execute();
 }
