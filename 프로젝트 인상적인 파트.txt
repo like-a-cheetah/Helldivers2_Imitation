@@ -14,3 +14,5 @@ DuplicateObject로 깊은 복사
 
 위젯이 화면에 나타나려고 하는 순간에 NativeConstruct 함수가 호출, CreateWidget으로 User위젯을 만들어도 Box->AddChild(StratagemCondition); 이런 상황에 NativeConstruct 함수가 호출됨
 위젯에서 UUserWidget이 아닌 그냥 버튼같은거 만들 때는 WidgetTree::ConstructWidget 사용
+
+Constraint 작업

@@ -15,10 +15,5 @@ public:
 	AStratagem();
 
 protected:
-	UFUNCTION()
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
-
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh");
-	TObjectPtr<USkeletalMeshComponent> SkelMeshComp;
 };

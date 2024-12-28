@@ -10,13 +10,13 @@
 
 #include "Characters/Player/DiversPlayerController.h"
 #include "Characters/Player/PlayerCharacter.h"
-#include "Stratagem/HellPodPlayer.h"
+#include "Stratagem/Hellpod_Player.h"
 
 AHelldviers2ModeBase::AHelldviers2ModeBase()
 {
 	PlayerControllerClass = ADiversPlayerController::StaticClass();
 
-	static ConstructorHelpers::FClassFinder<AHellPodPlayer> HellPodPlayer_C_Ref(TEXT("/Game/HellDivers2/Stratagem/HellPodPlayer/MyHellPodPlayer.MyHellPodPlayer_C"));
+	static ConstructorHelpers::FClassFinder<AHellpod> HellPodPlayer_C_Ref(TEXT("/Game/HellDivers2/Stratagem/HellPodPlayer/BP_Hellpod.BP_Hellpod_C"));
 	if (HellPodPlayer_C_Ref.Class) HellPodPlayer_C = HellPodPlayer_C_Ref.Class;
 }
 
@@ -54,7 +54,7 @@ void AHelldviers2ModeBase::BeginPlay()
 		FString LevelName = GetLevel()->GetOuter()->GetName();
 		if (LevelName == "InGameTestmap")
 		{
-			AHellPodPlayer* HellPod = GetWorld()->SpawnActor<AHellPodPlayer>(HellPodPlayer_C, StartPos, StartRot);
+			AHellpod_Player* HellPod = GetWorld()->SpawnActor<AHellpod_Player>(HellPodPlayer_C, StartPos, StartRot);
 			HellPod->AttchPlayer(PlayerChar);
 		}
 	}

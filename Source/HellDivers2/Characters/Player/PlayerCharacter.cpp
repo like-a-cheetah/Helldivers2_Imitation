@@ -328,7 +328,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	{
 		bActiveLookAction = false;
 		CameraBoom->bDoCollisionTest = false;
-		FollowCamera->SetRelativeLocation(FVector(600.0, 0.0f, 300.0f));
+		FollowCamera->SetRelativeLocation(FVector(550.0, 0.0f, 500.0f));
 		FollowCamera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
 
 		GetCharacterMovement()->GravityScale = 0.0f;
@@ -574,6 +574,12 @@ void APlayerCharacter::PlayerRebirth()
 {
 	UE_LOG(LogTemp, Log, TEXT("Rebirth"));
 	PlayAnimMontage(MT_PlayerRebirth);
+
+	FOnMontageEnded OnReadyMontageEnd;
+	OnReadyMontageEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) {
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		});
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnReadyMontageEnd);
 }
 
 void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
@@ -604,9 +610,8 @@ void APlayerCharacter::EnterHellpodBridge()
 
 		GetCharacterMovement()->GravityScale = 0.0f;
 		});
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnMontageEnd);
 
-	PlayAnimMontage(MT_PlayerReady);
-	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnMontageEnd, MT_PlayerReady);
 }
 
 void APlayerCharacter::SetNearbyInteractable(AActor* Object)
