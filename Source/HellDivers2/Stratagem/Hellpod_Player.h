@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 	virtual void OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
-	virtual void SpawnAttachment() override;
+	virtual void SpawnAttachMachine() override;
 
 private:
 	FOnPlayerArrive OnPlayerArrive;

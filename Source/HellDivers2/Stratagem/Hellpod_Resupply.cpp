@@ -3,10 +3,10 @@
 
 #include "Stratagem/Hellpod_Resupply.h"
 
+#include "Items/Item.h"
+
 AHellpod_Resupply::AHellpod_Resupply()
 {
-	AttachMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachMesh"));
-
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/HELLPOD_VARIANTS/HELLPOD_SUPPLY/SK_HELLPOD_SUPPLY.SK_HELLPOD_SUPPLY'"));
 	if (SkelMeshRef.Succeeded()) AttachMesh->SetSkeletalMeshAsset(SkelMeshRef.Object);
 
@@ -23,13 +23,21 @@ AHellpod_Resupply::AHellpod_Resupply()
 void AHellpod_Resupply::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AttachMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
-void AHellpod_Resupply::SpawnAttachment()
+void AHellpod_Resupply::SpawnSupplyItems()
 {
-	Super::SpawnAttachment();
+	Super::SpawnSupplyItems();
 
-	AttachMesh->PlayAnimation(SpreadAnim, false);
+	for (int i = 0; i < 4; i++)
+	{
+		AItem* SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem, SpawnParam);
+		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+
+		FName SocketName = FName(FString::Printf(TEXT("ammo%d"), i));
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		SpawnedItem->AttachToComponent(AttachMesh, AttachmentRules, SocketName);
+
+		SupplyItems.Add(SpawnedItem);
+	}
 }

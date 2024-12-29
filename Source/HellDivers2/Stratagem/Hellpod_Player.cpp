@@ -29,9 +29,9 @@ void AHellpod_Player::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent
 	Super::OnBoxOverlapBegin(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepHitResult);
 }
 
-void AHellpod_Player::SpawnAttachment()
+void AHellpod_Player::SpawnAttachMachine()
 {
-	Super::SpawnAttachment();
+	Super::SpawnAttachMachine();
 
 	HellpodMesh->PlayAnimation(MT_RecallPlayer, false);
 

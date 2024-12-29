@@ -7,7 +7,6 @@
 #include "InputMappingContext.h"
 #include "PlayerControl.generated.h"
 
-// This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPlayerControl : public UInterface
 {

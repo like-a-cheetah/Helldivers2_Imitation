@@ -110,8 +110,9 @@ APlayerCharacter::APlayerCharacter()
 
 	
 	//스트라타젬 구현
-	ConstructorHelpers::FClassFinder<AActor> TestStratagemCRef(TEXT("/Script/HellDivers2.HellPodPlayer"));
-	if (TestStratagemCRef.Class) TestStratagemC = TestStratagemCRef.Class;
+	static ConstructorHelpers::FObjectFinder<UStratagemData> ResupplyStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Resupply.Resupply'"));
+	if (ResupplyStratagemDataRef.Object) 
+		Stratagems.Add(ResupplyStratagemDataRef.Object);
 }
 
 void APlayerCharacter::InputActionFind()
@@ -236,9 +237,6 @@ void APlayerCharacter::MontageFind() {
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerReadyRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_PlayerReady.MT_PlayerReady'"));
 	if (MT_PlayerReadyRef.Object)	MT_PlayerReady = MT_PlayerReadyRef.Object;
-
-
-
 }
 
 void APlayerCharacter::SoundWaveFind()
@@ -565,7 +563,12 @@ void APlayerCharacter::SetStratagemFromGInst()
 	UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
 	if (GInst)
 	{
-		Stratagems = GInst->GetTempStratagemsD();
+		TArray<UStratagemData *> StratagemDatas = GInst->GetTempStratagemsD();
+		for (auto StratagemData : StratagemDatas)
+		{
+			Stratagems.Add(StratagemData);
+		}
+		
 		//if(OnStratagemSet.IsBound()) OnStratagemSet.Execute(Stratagems);
 	}
 }

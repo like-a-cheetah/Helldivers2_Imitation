@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Stratagem/HellPod.h"
+#include "Stratagem/Hellpod_Supply.h"
 #include "Hellpod_Resupply.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HELLDIVERS2_API AHellpod_Resupply : public AHellpod
+class HELLDIVERS2_API AHellpod_Resupply : public AHellpod_Supply
 {
 	GENERATED_BODY()
 	
@@ -19,14 +19,6 @@ public:
 
 	virtual void BeginPlay() override;
 
-private:
-	void SpawnAttachment();
-
-private:
-	UPROPERTY()
-	TObjectPtr<UAnimationAsset> DefaultAnim;
-	UPROPERTY()
-	TObjectPtr<UAnimationAsset> SpreadAnim;
-	UPROPERTY()
-	TObjectPtr<UAnimationAsset> FoldAnim;
+	// AHellpod_Supply을(를) 통해 상속됨
+	void SpawnSupplyItems() override;
 };

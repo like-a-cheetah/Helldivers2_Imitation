@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Stratagem.generated.h"
 
+DECLARE_DELEGATE(FOnDestoryBall);
+
 UCLASS()
 class HELLDIVERS2_API AStratagem : public AActor
 {
@@ -13,6 +15,8 @@ class HELLDIVERS2_API AStratagem : public AActor
 	
 public:	
 	AStratagem();
+
+	FOnDestoryBall OnDestoryBall;
 
 protected:
 protected:

@@ -48,12 +48,17 @@ protected:
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
 	TObjectPtr<UAnimMontage> InsertMontage;
 
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
 	TObjectPtr<UAnimMontage> TakeOutMontage;
+
+	UPROPERTY(EditAnywhere, Category = Widget)
+	TObjectPtr<class UWidgetComponent> InformWidget;
 
 public:
 	FORCEINLINE EItemType GetItemType() { return ItemType; }

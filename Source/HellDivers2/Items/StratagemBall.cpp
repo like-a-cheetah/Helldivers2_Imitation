@@ -7,6 +7,8 @@
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Stratagem/Stratagem.h"
+
 AStratagemBall::AStratagemBall()
 {
 	SkelMeshComp->SetCollisionProfileName(TEXT("StratagemBall"));
@@ -51,13 +53,15 @@ void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 	SpawnStratagem();
 }
 
-
 void AStratagemBall::SpawnStratagem()
 {
 	FVector SpawnLoc = GetActorLocation();
-	SpawnLoc.Z += 1000.0f;
+	SpawnLoc.Z += 200000.0f;
 
 	FRotator SpawnRot = FRotator::ZeroRotator;
 
-	GetWorld()->SpawnActor<AActor>(StratagemClass, SpawnLoc, SpawnRot);
+	AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, SpawnRot);
+	Stratagem->OnDestoryBall.BindLambda([this]() {
+		Destroy();
+		});
 }

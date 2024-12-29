@@ -4,9 +4,11 @@
 #include "Items/Item.h"
 
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/TextBlock.h"
 
 #include "Data/ItemData.h"
-#include "Interface/CharacterItemInterface.h"
+#include "Interface/PlayerControl.h"
 
 // Sets default values
 AItem::AItem()
@@ -19,9 +21,20 @@ AItem::AItem()
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("CapsuleComponent"));
 	SphereComp->InitSphereRadius(60.0f);  // Example values
-	SphereComp->SetCollisionProfileName(FName(TEXT("Item")));
+	SphereComp->SetCollisionProfileName(FName(TEXT("Trigger")));
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnOverlapBegin);
+	SphereComp->OnComponentEndOverlap.AddDynamic(this, &AItem::OnOverlapEnd);
 	SphereComp->SetupAttachment(RootComponent);
+
+	InformWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	InformWidget->SetupAttachment(SkelMeshComp);
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> InformWidgetRef(TEXT("/Game/HellDivers2/UI/WBP_ObjectInformWidget.WBP_ObjectInformWidget_C"));
+	InformWidget->SetWidgetClass(InformWidgetRef.Class);
+	InformWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	InformWidget->SetDrawSize(FVector2D(150.0f, 15.0f));
+	InformWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//InformWidget->SetHiddenInGame(true);
 }
 
 void AItem::BeginPlay()
@@ -32,7 +45,6 @@ void AItem::BeginPlay()
 	{
 		SetBaseData();
 	}
-
 }
 
 void AItem::SetBaseData()
@@ -46,9 +58,18 @@ void AItem::SetBaseData()
 
 void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	ICharacterItemInterface* OverlappingPawn = Cast<ICharacterItemInterface>(OtherActor);
-	if (OverlappingPawn)
+	IPlayerControl* Player = Cast<IPlayerControl>(OtherActor);
+	if (Player)
 	{
-		//OverlappingPawn->TakeItem(this);
+		InformWidget->SetHiddenInGame(false);
+	}
+}
+
+void AItem::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	IPlayerControl* Player = Cast<IPlayerControl>(OtherActor);
+	if (Player)
+	{
+		InformWidget->SetHiddenInGame(true);
 	}
 }

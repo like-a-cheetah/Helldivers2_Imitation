@@ -46,3 +46,12 @@ void UHUDWidget::ActiveStratagemWidget(bool bActive)
 	if(bActive) PlayAnimation(ActiveStratagemAnimation);
 	else PlayAnimation(ActiveStratagemAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
 }
+
+//void UHUDWidget::CreateInformWidget(FString Key, FString Inform)
+//{
+//	UE_LOG(LogTemp, Log, TEXT("%s"), *Inform);
+//	UTextBlock* InformTextBlock = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+//	InformTextBlock->SetText(FText::FromString(Inform));
+//
+//	Canvas->AddChild(InformTextBlock);
+//}

@@ -3,10 +3,10 @@
 
 #include "Stratagem/Hellpod_SupplyWeapon.h"
 
+#include "Items/Item.h"
+
 AHellpod_SupplyWeapon::AHellpod_SupplyWeapon()
 {
-	AttachMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachMesh"));
-
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/HELLPOD_VARIANTS/HELLPOD_WEAPON/SK_HELLPOD_STRATAGEM_WEAPON.SK_HELLPOD_STRATAGEM_WEAPON'"));
 	if (SkelMeshRef.Succeeded()) AttachMesh->SetSkeletalMeshAsset(SkelMeshRef.Object);
 
@@ -18,18 +18,34 @@ AHellpod_SupplyWeapon::AHellpod_SupplyWeapon()
 
 	static ConstructorHelpers::FObjectFinder<UAnimationAsset> FoldAnimRef(TEXT("/Script/Engine.AnimSequence'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/HELLPOD_VARIANTS/HELLPOD_WEAPON/SK_HELLPOD_STRATAGEM_WEAPON_A_0xf2fef7413421ec27.SK_HELLPOD_STRATAGEM_WEAPON_A_0xf2fef7413421ec27'"));
 	if (FoldAnimRef.Object) FoldAnim = FoldAnimRef.Object;
+
 }
 
 void AHellpod_SupplyWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AttachMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
-void AHellpod_SupplyWeapon::SpawnAttachment()
+void AHellpod_SupplyWeapon::SpawnSupplyItems()
 {
-	Super::SpawnAttachment();
+	Super::SpawnSupplyItems();
 
-	AttachMesh->PlayAnimation(SpreadAnim, false);
+	AItem* SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem, SpawnParam);
+	SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+	SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach0"));
+	SupplyItems.Add(SpawnedItem);
+
+	if (SubItem)
+	{
+		SpawnedItem = GetWorld()->SpawnActor<AItem>(SubItem);
+		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+		SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach1"));
+	}
+	else
+	{
+		SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem);
+		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+		SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach1"));
+	}
+	SupplyItems.Add(SpawnedItem);
 }

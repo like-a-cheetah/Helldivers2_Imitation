@@ -25,7 +25,7 @@ AHellpod::AHellpod()
 
 	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollider"));
 	BoxCollider->SetupAttachment(HellpodMesh);
-	BoxCollider->SetCollisionProfileName(TEXT("OverlapAll"));
+	BoxCollider->SetCollisionProfileName(TEXT("OverlapOnlyStatic"));
 	BoxCollider->OnComponentBeginOverlap.AddDynamic(this, &AHellpod::OnBoxOverlapBegin);
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/HELLPOD_VARIANTS/HELLPOD_PLAYER/SK_HELLPOD_PLAYER.SK_HELLPOD_PLAYER'"));
@@ -66,9 +66,12 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	UE_LOG(LogTemp, Log, TEXT("%s Arrive"), *OtherActor->GetName());
 
+	if(OnDestoryBall.IsBound()) OnDestoryBall.Execute();
+
 	BoxCollider->SetGenerateOverlapEvents(false);
 
 	HellpodMesh->SetCollisionProfileName(TEXT("BlockAll"));
+	HellpodMesh->SetGenerateOverlapEvents(false);
 	HellpodMesh->SetSimulatePhysics(false);
 
 	FVector DropPoint = GetActorLocation();
@@ -77,10 +80,10 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	SetActorLocation(DropPoint);
 
 	FTimerHandle DelaySummon;
-	GetWorld()->GetTimerManager().SetTimer(DelaySummon, this, &AHellpod::SpawnAttachment, 1.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(DelaySummon, this, &AHellpod::SpawnAttachMachine, 1.0f, false);
 }
 
-void AHellpod::SpawnAttachment()
+void AHellpod::SpawnAttachMachine()
 {
 	HellpodMesh->BreakConstraint(FVector(0.0f, 0.0f, 35000.0f), FVector(0.0f, 0.0f, 35000.0f), TEXT("TOP_LID"));
 }

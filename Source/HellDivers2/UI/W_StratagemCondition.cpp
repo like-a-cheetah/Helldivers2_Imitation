@@ -8,6 +8,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
+
 #include "Interface/CharacterHUDInterface.h"
 
 UW_StratagemCondition::UW_StratagemCondition(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
