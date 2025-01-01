@@ -6,8 +6,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Animation/AnimMontage.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Components/InputComponent.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AHellpod::AHellpod() 
 {
@@ -27,7 +28,12 @@ AHellpod::AHellpod()
 	BoxCollider->SetupAttachment(HellpodMesh);
 	BoxCollider->SetCollisionProfileName(TEXT("OverlapOnlyStatic"));
 	BoxCollider->OnComponentBeginOverlap.AddDynamic(this, &AHellpod::OnBoxOverlapBegin);
-	
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
+	AudioComp->SetupAttachment(RootComponent);
+	AudioComp->bAutoActivate = false;        
+	AudioComp->bAllowSpatialization = true;
+
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/HELLPOD_VARIANTS/HELLPOD_PLAYER/SK_HELLPOD_PLAYER.SK_HELLPOD_PLAYER'"));
 	if (SkelMeshRef.Succeeded()) HellpodMesh->SetSkeletalMeshAsset(SkelMeshRef.Object);
 
@@ -40,6 +46,15 @@ AHellpod::AHellpod()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_ReadyToRandingRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Stratagem/HellPodPlayer/MT_ReadyToRanding.MT_ReadyToRanding'"));
 	if (MT_ReadyToRandingRef.Object) MT_ReadyToRanding = MT_ReadyToRandingRef.Object;
 
+	static ConstructorHelpers::FObjectFinder<USoundWave> SW_FallingRef(TEXT("/Script/Engine.SoundWave'/Game/HellDivers2/Stratagem/Source/hellpod_falling_screech.hellpod_falling_screech'"));
+	if (SW_FallingRef.Object) SW_Falling = SW_FallingRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> SW_LandingRef(TEXT("/Script/Engine.SoundWave'/Game/HellDivers2/Stratagem/Source/hellpod_land_hit.hellpod_land_hit'"));
+	if (SW_LandingRef.Object) SW_Landing = SW_LandingRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> SW_HatchOpenRef(TEXT("/Script/Engine.SoundWave'/Game/HellDivers2/Stratagem/Source/Open_Hellpod_Hatch_0x3cec0b1c500ab97.Open_Hellpod_Hatch_0x3cec0b1c500ab97'"));
+	if (SW_HatchOpenRef.Object) SW_HatchOpen = SW_HatchOpenRef.Object;
+
 	CheckOnce = false;
 }
 
@@ -47,12 +62,16 @@ void AHellpod::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AudioComp->SetSound(SW_Falling);
+	AudioComp->Play();
+
 	HellpodMesh->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, -10000.0f));
 }
 
 void AHellpod::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 	CheckToLanding();
 }
@@ -66,11 +85,17 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	UE_LOG(LogTemp, Log, TEXT("%s Arrive"), *OtherActor->GetName());
 
+	AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
+	HellpodMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	HellpodMesh->SetGenerateOverlapEvents(false);
+	HellpodMesh->SetSimulatePhysics(false);
+
 	if(OnDestoryBall.IsBound()) OnDestoryBall.Execute();
 
 	BoxCollider->SetGenerateOverlapEvents(false);
 
-	HellpodMesh->SetCollisionProfileName(TEXT("BlockAll"));
+	AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
+	HellpodMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	HellpodMesh->SetGenerateOverlapEvents(false);
 	HellpodMesh->SetSimulatePhysics(false);
 
@@ -79,6 +104,10 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 
 	SetActorLocation(DropPoint);
 
+	AudioComp->Stop();
+	AudioComp->SetSound(SW_Landing);
+	AudioComp->Play();
+
 	FTimerHandle DelaySummon;
 	GetWorld()->GetTimerManager().SetTimer(DelaySummon, this, &AHellpod::SpawnAttachMachine, 1.0f, false);
 }
@@ -86,6 +115,10 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 void AHellpod::SpawnAttachMachine()
 {
 	HellpodMesh->BreakConstraint(FVector(0.0f, 0.0f, 35000.0f), FVector(0.0f, 0.0f, 35000.0f), TEXT("TOP_LID"));
+
+	AudioComp->Stop();
+	AudioComp->SetSound(SW_HatchOpen);
+	AudioComp->Play();
 }
 
 void AHellpod::CheckToLanding()

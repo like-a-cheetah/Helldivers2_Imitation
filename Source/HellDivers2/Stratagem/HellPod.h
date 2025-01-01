@@ -44,6 +44,14 @@ private:
 	TObjectPtr<class UBoxComponent> BoxCollider;
 
 	UPROPERTY()
+	TObjectPtr<UAudioComponent> AudioComp;
+	UPROPERTY()
+	TObjectPtr<USoundWave> SW_Falling;
+	UPROPERTY()
+	TObjectPtr<USoundWave> SW_Landing;
+	UPROPERTY()
+	TObjectPtr<USoundWave> SW_HatchOpen;
+	UPROPERTY()
 	TObjectPtr<UAnimSequence> StartAnim;
 	UPROPERTY()
 	TObjectPtr<UAnimMontage> MT_ReadyToRanding;

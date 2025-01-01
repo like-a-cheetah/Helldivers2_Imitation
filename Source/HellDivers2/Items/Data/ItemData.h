@@ -29,6 +29,9 @@ public:
 	TObjectPtr<class USkeletalMesh> SkelMesh;
 
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
+	TObjectPtr<class UStaticMesh> StaticMesh;
+
+	UPROPERTY(EditAnywhere, Category = BasicInfo)
 	FName SocketName;
 
 	UPROPERTY(EditAnywhere, Category = BasicInfo);

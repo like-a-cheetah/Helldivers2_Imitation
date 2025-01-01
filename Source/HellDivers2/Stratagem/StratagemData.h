@@ -33,9 +33,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CoolTime;
-	//1 = A, 2 = D, 3 = S, 4 = W
+	//1 = ก็, 2 = กๆ, 3 = ก้, 4 = ก่
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	TArray<uint8> Macro;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	EStratagemType StratagemType;
 
 	FOnActiveStratagemDelegate OnActiveWidget;
 	FOnCorrectMacro OnCorrectMacro;
@@ -45,7 +48,8 @@ public:
 
 	void CorrectMacro(int n);
 
-	TSubclassOf<AStratagem> GetCStratagem() { return CStratagem; }
+	FORCEINLINE TSubclassOf<AStratagem> GetCStratagem() { return CStratagem; }
+	FORCEINLINE EStratagemType GetStratagemType() { return StratagemType; }
 
 private:
 	uint8 bActive : 1;

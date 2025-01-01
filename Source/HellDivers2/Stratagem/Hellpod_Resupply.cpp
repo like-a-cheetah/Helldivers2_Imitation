@@ -32,7 +32,7 @@ void AHellpod_Resupply::SpawnSupplyItems()
 	for (int i = 0; i < 4; i++)
 	{
 		AItem* SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem, SpawnParam);
-		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+		SpawnedItem->GetStaticMeshComp()->SetSimulatePhysics(false);
 
 		FName SocketName = FName(FString::Printf(TEXT("ammo%d"), i));
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);

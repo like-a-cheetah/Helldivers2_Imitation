@@ -29,7 +29,7 @@ AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Cont
 	if (LevelName == "InGameTestmap")
 	{
 		StartPos = PlayerStart->GetActorLocation();
-		StartPos.Z += 20000.0f;
+		StartPos.Z += 2000.0f;
 		PlayerStart->SetActorLocation(StartPos);
 		StartRot = PlayerStart->GetActorRotation();
 		StartRot.Yaw += 60.0f;

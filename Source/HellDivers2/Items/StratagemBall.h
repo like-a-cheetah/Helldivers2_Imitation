@@ -20,7 +20,7 @@ public:
 	void BeginPlay();
 
 public:
-	FORCEINLINE void SetStratagem(TSubclassOf<AActor> InStratagemClass) { StratagemClass = InStratagemClass; }
+	FORCEINLINE void SetStratagem(TSubclassOf<AActor> InStratagemClass, uint8 InStratagemType) { StratagemClass = InStratagemClass; StratagemType = InStratagemType; }
 
 private:
 	UFUNCTION()
@@ -43,4 +43,6 @@ private:
 
 	UFUNCTION()
 	void SpawnStratagem();
+
+	uint8 StratagemType;
 };

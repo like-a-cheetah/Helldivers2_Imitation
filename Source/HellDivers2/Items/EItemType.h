@@ -12,10 +12,14 @@ UENUM(BlueprintType)
 enum class EItemType : uint8
 {
 	None = 0,
+
 	Main,
 	Pistol,
 	Stratagem,
+
+	AmmoBox,
+
 	Projectile,
-	StratagemBall,
-	Heal
+	Heal,
+	StratagemBall
 };

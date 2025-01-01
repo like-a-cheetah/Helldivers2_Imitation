@@ -78,9 +78,11 @@ APlayerCharacter::APlayerCharacter()
 	Stat = CreateDefaultSubobject<UPlayerStatComponent>(TEXT("PlayerStat"));
 
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::ChargeItem)));
+
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::ChargeItem)));
 
 	ImpactWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ImpactWidget"));
@@ -110,9 +112,12 @@ APlayerCharacter::APlayerCharacter()
 
 	
 	//스트라타젬 구현
-	static ConstructorHelpers::FObjectFinder<UStratagemData> ResupplyStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Resupply.Resupply'"));
+	static ConstructorHelpers::FObjectFinder<UStratagemData> ResupplyStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Resupply/Resupply.Resupply'"));
 	if (ResupplyStratagemDataRef.Object) 
 		Stratagems.Add(ResupplyStratagemDataRef.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> OrbitStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Orbital_120mm_HE_Barrage_Data.Orbital_120mm_HE_Barrage_Data'"));
+	if (OrbitStratagemDataRef.Object)
+		Stratagems.Add(OrbitStratagemDataRef.Object);
 }
 
 void APlayerCharacter::InputActionFind()
@@ -763,6 +768,7 @@ void APlayerCharacter::LeftButtonStarted()
 			);
 			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(MontageEnded);
 		}
+		else HandleItem = nullptr;
 
 		bSucceededStratagem = false;
 	}
@@ -1166,7 +1172,7 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 					SetLookingForward(false);
 								
 					//보류. 이방법 좀 더 생각하기, 이 액터 스폰할 때 TSubclass로 만들고 AItem 타입 변수로 받는데
-					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem());
+					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem(), (uint8)Stratagem->GetStratagemType());
 
 					for (int i = 0; i < Stratagems.Num(); i++)
 					{
@@ -1336,8 +1342,12 @@ void APlayerCharacter::TakeItem(const FInputActionValue& Value)
 	{
 		PlayAnimMontage(MT_GetItem);
 
-		AItem* Item = GroundedItems.Pop();
-		TakeItemActions[(uint8)Item->GetItemType()].ItemDelegate.ExecuteIfBound(Item);
+		AItem* Item = Cast<AItem>(GroundedItems.Pop());
+		if (Item)
+		{
+			FTakeItemDelegateWrapper OnItemAction = TakeItemActions[(uint8)Item->GetItemType()];
+			if(OnItemAction.ItemDelegate.IsBound()) OnItemAction.ItemDelegate.ExecuteIfBound(Item);
+		}
 	}
 }
 
@@ -1461,8 +1471,9 @@ void APlayerCharacter::EquipWeapon(AItem* Item)
 
 void APlayerCharacter::ChargeItem(AItem* Item)
 {
-	UE_LOG(LogTemp, Warning, TEXT("소비 아이템은 보급으로만 충전 가능"));
+	//UE_LOG(LogTemp, Warning, TEXT("소비 아이템은 보급으로만 충전 가능"));
 
+	ChargeConsumedItem();
 	Item->Destroy();
 }
 
@@ -1470,9 +1481,18 @@ void APlayerCharacter::ChargeConsumedItem()
 {
 	SyringeNum = 4;
 	GrenadeNum = 4;
-	GunsMagazineN[EItemType::Main] = 4;
-	GunsMagazineN[EItemType::Pistol] = 4;
-	GunsMagazineN[EItemType::Stratagem] = 4;
+	if (Weapons.Contains(EItemType::Main))
+	{
+		GunsMagazineN[EItemType::Main] = 4;
+	}
+	if (Weapons.Contains(EItemType::Pistol))
+	{
+		GunsMagazineN[EItemType::Pistol] = 4;
+	}
+	if (Weapons.Contains(EItemType::Stratagem))
+	{
+		GunsMagazineN[EItemType::Stratagem] = 4;
+	}
 }
 
 void APlayerCharacter::BeginWeaponEquip()

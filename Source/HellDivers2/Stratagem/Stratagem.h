@@ -6,6 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Stratagem.generated.h"
 
+UENUM(BlueprintType)
+enum class EStratagemType : uint8
+{
+	NotAttack = 0,
+	Attack
+};
+
 DECLARE_DELEGATE(FOnDestoryBall);
 
 UCLASS()
@@ -19,5 +26,5 @@ public:
 	FOnDestoryBall OnDestoryBall;
 
 protected:
-protected:
+	//TSubclassOf<class ARocket>
 };

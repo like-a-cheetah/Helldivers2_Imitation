@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Stratagem/Stratagem.h"
+#include "Stratagem/Orbit/Orbit.h"
 
 AStratagemBall::AStratagemBall()
 {
@@ -38,7 +39,8 @@ void AStratagemBall::BeginPlay()
 
 void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (NS_Blue) NC_Laser->SetAsset(NS_Blue);
+	if (StratagemType == (uint8)EStratagemType::NotAttack) NC_Laser->SetAsset(NS_Blue);
+	else NC_Laser->SetAsset(NS_Red);
 
 	SkelMeshComp->SetSimulatePhysics(false);
 	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, false);
@@ -64,4 +66,7 @@ void AStratagemBall::SpawnStratagem()
 	Stratagem->OnDestoryBall.BindLambda([this]() {
 		Destroy();
 		});
+
+	AOrbit* Orbit = Cast<AOrbit>(Stratagem);
+	if (Orbit) Orbit->SetBall(this);
 }

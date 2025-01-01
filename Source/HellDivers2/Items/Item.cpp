@@ -34,7 +34,7 @@ AItem::AItem()
 	InformWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	InformWidget->SetDrawSize(FVector2D(150.0f, 15.0f));
 	InformWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//InformWidget->SetHiddenInGame(true);
+	InformWidget->SetHiddenInGame(true);
 }
 
 void AItem::BeginPlay()
@@ -50,7 +50,7 @@ void AItem::BeginPlay()
 void AItem::SetBaseData()
 {
 	ItemType = ItemData->ItemType;
-	SkelMeshComp->SetSkeletalMeshAsset(ItemData->SkelMesh);
+	if(ItemData->SkelMesh) SkelMeshComp->SetSkeletalMeshAsset(ItemData->SkelMesh);
 	InsertMontage = ItemData->InsertMontage;
 	TakeOutMontage = ItemData->TakeOutMontage;
 	SocketName = ItemData->SocketName;

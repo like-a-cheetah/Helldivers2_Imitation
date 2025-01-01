@@ -32,10 +32,11 @@ ABullet::ABullet()
 	SphereComp->SetCollisionProfileName(TEXT("Bullet"));
 	SphereComp->SetEnableGravity(false);
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABullet::OnBulletBeginOverlap);
+	SphereComp->SetUseCCD(true);
 
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
-	ProjectileMovementComp->InitialSpeed = 4000.0f;
-	ProjectileMovementComp->MaxSpeed = 4000.0f;
+	ProjectileMovementComp->InitialSpeed = 10000.0f;
+	ProjectileMovementComp->MaxSpeed = 10000.0f;
 	ProjectileMovementComp->ProjectileGravityScale = 0.0f;
 	ProjectileMovementComp->Velocity = GetActorRightVector() * ProjectileMovementComp->InitialSpeed;
 

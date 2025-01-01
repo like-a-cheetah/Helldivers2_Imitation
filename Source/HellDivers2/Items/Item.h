@@ -19,7 +19,7 @@ public:
 
 	void BeginPlay();
 
-	void SetBaseData();
+	virtual void SetBaseData();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
@@ -33,6 +33,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BasicInfo)
 	TObjectPtr<USkeletalMeshComponent> SkelMeshComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BasicInfo)
+	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
 
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
 	FName Name;
@@ -66,6 +69,7 @@ public:
 	FORCEINLINE UAnimMontage* GetTakeOutMontage() { return TakeOutMontage; }
 	FORCEINLINE FName GetSocketName() { return SocketName; }
 	FORCEINLINE USkeletalMeshComponent* GetSkelMeshComp() { return SkelMeshComp; }
+	FORCEINLINE UStaticMeshComponent* GetStaticMeshComp() { return StaticMeshComp; }
 	FORCEINLINE FName GetName() { return Name; }
 	FORCEINLINE int32 GetCount() { return Count; }
 	FORCEINLINE void SetCount(int32 NewCount) { Count = NewCount; }

@@ -47,19 +47,14 @@ class HELLDIVERS2_API APlayerCharacter : public ACharacter, public IPlayerAnimIn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	APlayerCharacter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 protected:
