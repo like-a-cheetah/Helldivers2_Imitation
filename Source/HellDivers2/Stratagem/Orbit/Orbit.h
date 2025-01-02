@@ -21,13 +21,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	FORCEINLINE void SetBall(AActor* InBall) { Ball = InBall; }
-
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
 	TSubclassOf<class ARocket> RocketC;
-
-	TObjectPtr<AActor> Ball;
 
 	UPROPERTY();
 	FVector Goal;

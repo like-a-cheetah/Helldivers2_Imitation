@@ -15,6 +15,9 @@
 
 DECLARE_DELEGATE_OneParam(FOnActiveStratagemDelegate, bool /*bActive*/);
 DECLARE_DELEGATE_OneParam(FOnCorrectMacro, int /*IndexN*/);
+DECLARE_DELEGATE_OneParam(FOnSetCoolTimeText, FString /*Str*/);
+DECLARE_DELEGATE_OneParam(FOnHideMacroBox, bool /*bHide*/);
+DECLARE_DELEGATE_OneParam(FOnShowConditionWidget, bool /*bShow*/);
 
 UCLASS()
 class HELLDIVERS2_API UStratagemData : public UPrimaryDataAsset
@@ -32,7 +35,11 @@ public:
 	TObjectPtr<class UTexture2D> Texture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 bCoolTime : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxCoolTime;
 	float CoolTime;
+
 	//1 = ก็, 2 = กๆ, 3 = ก้, 4 = ก่
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	TArray<uint8> Macro;
@@ -40,13 +47,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	EStratagemType StratagemType;
 
+	FOnSetCoolTimeText OnSetCoolTimeText;
 	FOnActiveStratagemDelegate OnActiveWidget;
 	FOnCorrectMacro OnCorrectMacro;
+	FOnHideMacroBox OnHideMacroBox;
+	FOnShowConditionWidget ShowConditionWidgetDelegate;
 
 	void SetbActive(bool InbActive);
 	FORCEINLINE bool IsActive() { return bActive; }
 
 	void CorrectMacro(int n);
+
+	void SetCoolTime(UWorld* World);
 
 	FORCEINLINE TSubclassOf<AStratagem> GetCStratagem() { return CStratagem; }
 	FORCEINLINE EStratagemType GetStratagemType() { return StratagemType; }

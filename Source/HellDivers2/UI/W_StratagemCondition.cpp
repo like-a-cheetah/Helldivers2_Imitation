@@ -56,6 +56,9 @@ void UW_StratagemCondition::SetData(UStratagemData* InData)
 	Data = InData;
 	Data->OnActiveWidget.BindUObject(this, &UW_StratagemCondition::SetInactiveW);
 	Data->OnCorrectMacro.BindUObject(this, &UW_StratagemCondition::SetArrowColor);
+	Data->OnSetCoolTimeText.BindUObject(this, &UW_StratagemCondition::SetCoolTimeText);
+	Data->OnHideMacroBox.BindUObject(this, &UW_StratagemCondition::SetHideMacroBox);
+	Data->ShowConditionWidgetDelegate.BindUObject(this, &UW_StratagemCondition::ShowWidget);
 }
 
 void UW_StratagemCondition::ShowWidget(bool bShow)
@@ -119,4 +122,25 @@ void UW_StratagemCondition::InitAllArrowColor()
 			Img->SetColorAndOpacity(FLinearColor::White);
 		}
 	}
+}
+
+void UW_StratagemCondition::SetCoolTimeText(FString Text)
+{
+	ConditionText->SetText(FText::FromString(Text));
+}
+
+void UW_StratagemCondition::SetHideMacroBox(bool bHide)
+{
+	if (bHide)
+	{
+		MacroBox->SetVisibility(ESlateVisibility::Hidden);
+		ConditionText->SetVisibility(ESlateVisibility::Visible);
+		ConditionText->SetText(FText::FromString(FString::Printf(TEXT("준비"))));
+	}
+	else
+	{
+		MacroBox->SetVisibility(ESlateVisibility::Visible);
+		ConditionText->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 }

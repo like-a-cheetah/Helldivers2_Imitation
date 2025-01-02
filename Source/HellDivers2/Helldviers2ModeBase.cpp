@@ -49,7 +49,7 @@ void AHelldviers2ModeBase::BeginPlay()
 	APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(PlayerController->GetPawn());
 	if (PlayerChar)
 	{
-		PlayerController->Possess(PlayerChar);
+		//PlayerController->Possess(PlayerChar);
 
 		FString LevelName = GetLevel()->GetOuter()->GetName();
 		if (LevelName == "InGameTestmap")

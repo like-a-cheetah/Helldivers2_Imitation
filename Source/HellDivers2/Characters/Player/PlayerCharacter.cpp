@@ -367,6 +367,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	SetImpactPoint();
 	
+	if(Stratagems.Num() > 0) CalStratagemCoolTime(DeltaTime);
 
 	//if (CurrentPose == EPose::Prone && bRightButton)
 	//{
@@ -568,13 +569,33 @@ void APlayerCharacter::SetStratagemFromGInst()
 	UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
 	if (GInst)
 	{
-		TArray<UStratagemData *> StratagemDatas = GInst->GetTempStratagemsD();
+		TArray<UStratagemData*> StratagemDatas = GInst->GetTempStratagemsD();
 		for (auto StratagemData : StratagemDatas)
 		{
 			Stratagems.Add(StratagemData);
 		}
 		
 		//if(OnStratagemSet.IsBound()) OnStratagemSet.Execute(Stratagems);
+	}
+}
+
+void APlayerCharacter::CalStratagemCoolTime(float DeltaTime)
+{
+	for (auto Stratagem : Stratagems)
+	{
+		if (Stratagem->bCoolTime)
+		{
+			Stratagem->CoolTime -= DeltaTime;
+
+			FString CoolTimeStr = FString::Printf(TEXT("%d"), (int)Stratagem->CoolTime);
+			Stratagem->OnSetCoolTimeText.Execute(CoolTimeStr);
+
+			if (Stratagem->CoolTime <= 0.0f)
+			{
+				Stratagem->bCoolTime = false;
+				Stratagem->OnHideMacroBox.Execute(false);
+			}
+		}
 	}
 }
 
@@ -634,9 +655,9 @@ void APlayerCharacter::SetStratagemConditionWidget(UUserWidget* InStratagemNotic
 	UW_StratagemCondition* W_StratagemCondition = Cast<UW_StratagemCondition>(InStratagemNoticeWidget);
 	if (W_StratagemCondition)
 	{
-		FOnShowConditionWidget ShowConditionWidgetDelegate;
-		ShowConditionWidgetDelegate.BindUObject(W_StratagemCondition, &UW_StratagemCondition::ShowWidget);
-		OnShowConditionDelegates.Add(ShowConditionWidgetDelegate);
+		//FOnShowConditionWidget ShowConditionWidgetDelegate;
+		//ShowConditionWidgetDelegate.BindUObject(W_StratagemCondition, &UW_StratagemCondition::ShowWidget);
+		//OnShowConditionDelegates.Add(ShowConditionWidgetDelegate);
 
 		//FOnSetActiveW SetInactiveWDelegate;
 		//SetInactiveWDelegate.BindUObject(W_StratagemCondition, &UW_StratagemCondition::SetInactiveW);
@@ -751,6 +772,9 @@ void APlayerCharacter::LeftButtonStarted()
 	}
 	else if (HandleItem->GetItemType() == EItemType::StratagemBall) {
 		HandleItem->GetSkelMeshComp()->SetNotifyRigidBodyCollision(true);
+		OnSetStratagemCoolTime.Execute(GetWorld());
+		OnSetStratagemCoolTime.Unbind();		
+
 		ThrowItem();
 
 		if (PreItem)
@@ -1035,13 +1059,9 @@ void APlayerCharacter::TakeStratagemBall(const FInputActionValue& Value)
 		MacroIndex = 0;
 		for (int i = 0; i < Stratagems.Num(); i++)
 		{
-			OnShowConditionDelegates[i].Execute(true);
+			Stratagems[i]->ShowConditionWidgetDelegate.Execute(true);
 			Stratagems[i]->SetbActive(true);
 		}
-		//OnActiveStratagem.Execute(true);
-		// 
-		//for(int i=0; i<Stratagems.Num(); i++)
-			//ActivatedMacros.Add(Stratagems[i]->Macro);
 
 		AItem* StratagemBall = GetWorld()->SpawnActor<AItem>(StratagemBallClass);
 
@@ -1083,7 +1103,7 @@ void APlayerCharacter::TakeStratagemBall(const FInputActionValue& Value)
 		{
 			if (HandleItem->GetItemType() == EItemType::StratagemBall)
 			{
-				for (int i = 0; i < Stratagems.Num(); i++) OnShowConditionDelegates[i].Execute(false);
+				for (auto Stratagem : Stratagems) Stratagem->ShowConditionWidgetDelegate.Execute(false);
 				//OnActiveStratagem.Execute(false);
 				PlayAnimMontage(HandleItem->GetInsertMontage());
 
@@ -1153,7 +1173,12 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 				Stratagem->SetbActive(false);
 			continue;
 		}
-		else {
+		else if (Stratagem->bCoolTime)
+		{
+
+		}
+		else 
+		{
 			const uint8 MacroKey = Stratagem->Macro[MacroIndex];
 			if (MacroKey == InputMacro) 
 			{
@@ -1171,12 +1196,15 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 					SetLookingForward(false);
 								
-					//보류. 이방법 좀 더 생각하기, 이 액터 스폰할 때 TSubclass로 만들고 AItem 타입 변수로 받는데
+					OnSetStratagemCoolTime.BindUObject(Stratagem, &UStratagemData::SetCoolTime);
+					Stratagem->OnHideMacroBox.Execute(true);
+
 					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem(), (uint8)Stratagem->GetStratagemType());
 
 					for (int i = 0; i < Stratagems.Num(); i++)
 					{
-						if (Stratagems[i] != Stratagem) OnShowConditionDelegates[i].Execute(false);
+						if (Stratagems[i] != Stratagem)
+							Stratagems[i]->ShowConditionWidgetDelegate.Execute(false);
 					}
 								
 					return;
@@ -1196,7 +1224,8 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 	{
 		MacroIndex = 0;
 
-		for (auto Stratagem : Stratagems) Stratagem->SetbActive(true);
+		for (auto Stratagem : Stratagems)
+			if(!Stratagem->bCoolTime) Stratagem->SetbActive(true);
 	}
 
 	//for (int i = 0; i < ActivatedMacros.Num(); ) 

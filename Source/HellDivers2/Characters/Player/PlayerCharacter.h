@@ -36,10 +36,11 @@ struct FTakeItemDelegateWrapper
 DECLARE_DELEGATE_OneParam(FOnActiveStratagemDelegate, bool /*bActive*/);
 DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
 //DECLARE_DELEGATE_OneParam(FOnStratagemSet, TArray<class UStratagemData*> /*Stratagems*/);
-DECLARE_DELEGATE_OneParam(FOnShowConditionWidget, bool /*bShow*/);
+//DECLARE_DELEGATE_OneParam(FOnShowConditionWidget, bool /*bShow*/);
 //ECLARE_DELEGATE_OneParam(FOnSetActiveW, bool /*bActive*/);
 //DECLARE_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
+DECLARE_DELEGATE_OneParam(FOnSetStratagemCoolTime, UWorld*);
 
 UCLASS()
 class HELLDIVERS2_API APlayerCharacter : public ACharacter, public IPlayerAnimInterface, public IPlayerControl, public ICharacterHUDInterface, public IStratagemInterface
@@ -353,11 +354,15 @@ private:
 	//FOnActiveStratagemDelegate OnActiveStratagem;
 	FOnCloseStratagemSettingWidget OnCloseStratagemSettingWidget;
 	//FOnStratagemSet OnStratagemSet;
-	TArray<FOnShowConditionWidget> OnShowConditionDelegates;
+	//TArray<FOnShowConditionWidget> OnShowConditionDelegates;
 	//TArray<FOnSetActiveW> OnSetActiveWDelegates;
 	FOnShowLoadOutWidget OnShowLoadOutWidget;
 
 	void SetStratagemFromGInst();
+
+	FOnSetStratagemCoolTime OnSetStratagemCoolTime;
+
+	void CalStratagemCoolTime(float DeltaTime);
 
 public:
 	void PlayerRebirth();

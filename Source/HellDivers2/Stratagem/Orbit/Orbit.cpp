@@ -22,9 +22,6 @@ void AOrbit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector BallLoc = Ball->GetActorLocation();
-	Goal = { BallLoc.X, BallLoc.Y, BallLoc.Z };
-
 	if (!bStrike)
 	{
 		CalculateTiming(DeltaTime);
@@ -68,8 +65,9 @@ void AOrbit::Strike(float DeltaTime)
 			FVector SpawnLoc = FVector::ZeroVector;
 			SpawnLoc.Z += 5000.0f;
 
+			FVector ActorLoc = GetActorLocation();
 			FVector2D Random2DPoint = FMath::RandPointInCircle(Radius);
-			Goal = { Random2DPoint.X + Goal.X, Random2DPoint.Y + Goal.Y, Goal.Z };
+			Goal = { Random2DPoint.X + ActorLoc.X, Random2DPoint.Y + ActorLoc.Y, ActorLoc.Z };
 
 			FVector NormalVector = Goal - SpawnLoc;
 			NormalVector = NormalVector.GetSafeNormal();

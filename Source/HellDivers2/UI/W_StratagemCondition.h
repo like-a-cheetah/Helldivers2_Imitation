@@ -53,9 +53,14 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<class UImage>> Macro;
 
+	UPROPERTY(Meta = (BindWidget))
+	TObjectPtr<class UTextBlock> ConditionText;
+
 	FColor CorrectColor;
 
 	void SetMacro();
 	void SetArrowColor(int n);
 	void InitAllArrowColor();
+	void SetCoolTimeText(FString Text);
+	void SetHideMacroBox(bool bHide);
 };

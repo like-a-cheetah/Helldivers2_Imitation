@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Stratagem/Stratagem.h"
-#include "Stratagem/Orbit/Orbit.h"
+#include "Stratagem/Hellpod.h"
 
 AStratagemBall::AStratagemBall()
 {
@@ -58,15 +58,13 @@ void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 void AStratagemBall::SpawnStratagem()
 {
 	FVector SpawnLoc = GetActorLocation();
-	SpawnLoc.Z += 200000.0f;
-
+	if (StratagemClass->IsChildOf(AHellpod::StaticClass())) SpawnLoc.Z += 20000.0f;
 	FRotator SpawnRot = FRotator::ZeroRotator;
 
 	AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, SpawnRot);
+
+
 	Stratagem->OnDestoryBall.BindLambda([this]() {
 		Destroy();
 		});
-
-	AOrbit* Orbit = Cast<AOrbit>(Stratagem);
-	if (Orbit) Orbit->SetBall(this);
 }
