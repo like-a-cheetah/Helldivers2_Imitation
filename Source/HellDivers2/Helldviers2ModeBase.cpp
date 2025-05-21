@@ -28,11 +28,7 @@ AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Cont
 	FString LevelName = GetLevel()->GetOuter()->GetName();
 	if (LevelName == "InGameTestmap")
 	{
-		StartPos = PlayerStart->GetActorLocation();
-		StartPos.Z += 2000.0f;
-		PlayerStart->SetActorLocation(StartPos);
-		StartRot = PlayerStart->GetActorRotation();
-		StartRot.Yaw += 60.0f;
+		ResetSpawnPoint(PlayerStart);
 	}
 	else
 	{
@@ -49,13 +45,29 @@ void AHelldviers2ModeBase::BeginPlay()
 	APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(PlayerController->GetPawn());
 	if (PlayerChar)
 	{
-		//PlayerController->Possess(PlayerChar);
-
 		FString LevelName = GetLevel()->GetOuter()->GetName();
 		if (LevelName == "InGameTestmap")
 		{
-			AHellpod_Player* HellPod = GetWorld()->SpawnActor<AHellpod_Player>(HellPodPlayer_C, StartPos, StartRot);
-			HellPod->AttchPlayer(PlayerChar);
+			PlayerChar->OnRespawnPlayer.BindUObject(this, &AHelldviers2ModeBase::SpawnPlayerHellpod);
+
+			////실제 게임 시뮬
+			//SpawnPlayerHellpod(PlayerChar);
+			////실제 게임 시뮬
 		}
 	}
+}
+
+void AHelldviers2ModeBase::ResetSpawnPoint(AActor* Actor)
+{
+	StartPos = Actor->GetActorLocation();
+	StartPos.Z += 10000.0f;
+	//PlayerStart->SetActorLocation(StartPos);
+	StartRot = Actor->GetActorRotation();
+	StartRot.Yaw += 60.0f;
+}
+
+void AHelldviers2ModeBase::SpawnPlayerHellpod(APlayerCharacter* PlayerChar)
+{
+	AHellpod_Player* HellPod = GetWorld()->SpawnActor<AHellpod_Player>(HellPodPlayer_C, StartPos, StartRot);
+	HellPod->AttchPlayer(PlayerChar);
 }

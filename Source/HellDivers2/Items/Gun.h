@@ -26,7 +26,6 @@ public:
 
 	void SetGunData();
 
-
 protected:
 	UPROPERTY(EditAnywhere, Category = WeaponInfo)
 	TObjectPtr<class UGunData> GunData;
@@ -48,7 +47,7 @@ protected:
 	uint32 MaxRounds;
 
 	UPROPERTY(EditAnywhere, Category = WeaponInfo)
-	TSubclassOf<class ABullet> Bullet;
+	TSubclassOf<class ABullet> BulletC;
 
 	UPROPERTY(EditAnywhere, Category = WeaponInfo)
 	FName MuzzleSocketName;
@@ -76,6 +75,14 @@ protected:
 	UFUNCTION()
 	void Recoil();
 
+	UPROPERTY(EditAnywhere, Category = Sound)
+	TObjectPtr<USoundWave> SW_Shot;
+
+	TObjectPtr<UAudioComponent> AudioComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VFX, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UParticleSystemComponent> MuzzleFlashVFX;
+
 protected:
 	// IGunInterface
 	void Shot() override;
@@ -85,4 +92,5 @@ protected:
 	UAnimMontage* GetReloadMontage() override;
 	void PlayReloadMontage() override;
 	bool IsCompleteReload() override;
+	void StopShotSound() override;
 };

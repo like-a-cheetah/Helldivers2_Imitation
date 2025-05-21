@@ -1,0 +1,15 @@
+#pragma once
+
+#define BBKEY_HOMEPOS TEXT("HomePos")
+#define BBKEY_NAVPOS TEXT("NavPos")
+#define BBKEY_PATROLPOS TEXT("PatrolPos")
+#define BBKEY_TARGETPOS TEXT("TargetPos")
+#define BBKEY_TARGET TEXT("Target")
+#define BBKEY_TARGET_DIST TEXT("TargetDist")
+#define BBKEY_ACID_COOLTIME TEXT("AcidCoolTime")
+#define BBKEY_ACID_READY TEXT("AcidReady")
+#define BBKEY_ROTATE_TARGET TEXT("RotateTarget")
+#define BBKEY_MAX_RUSH_COOLTIME TEXT("MaxRushCool")
+#define BBKEY_CURRENT_RUSH_COOLTIME TEXT("CurrentRushCool")
+#define BBKEY_RAND_ATTACK TEXT("RandAttack")
+#define BBKEY_CALLTEAM TEXT("bCallTeam")

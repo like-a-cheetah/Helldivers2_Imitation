@@ -16,7 +16,7 @@ AItem_SM::AItem_SM()
 	StaticMeshComp->SetCollisionProfileName(FName(TEXT("Item")));
 	SetRootComponent(StaticMeshComp);
 
-	SphereComp->SetupAttachment(StaticMeshComp);
+	TiggerCollision->SetupAttachment(StaticMeshComp);
 	InformWidget->SetupAttachment(StaticMeshComp);
 }
 

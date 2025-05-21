@@ -10,12 +10,12 @@
 
 #include "Interface/CharacterItemInterface.h"
 #include "Interface/GunInterface.h"
-#include "Items/EItemType.h"
 #include "Interface/PlayerAnimInterface.h"
-#include "EPose.h"
 #include "Interface/PlayerControl.h"
 #include "Interface/CharacterHUDInterface.h"
 #include "Interface/StratagemInterface.h"
+#include "Items/EItemType.h"
+#include "EPose.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -41,6 +41,7 @@ DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
 //DECLARE_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 DECLARE_DELEGATE_OneParam(FOnSetStratagemCoolTime, UWorld*);
+DECLARE_DELEGATE_OneParam(FOnRespawnPlayer, APlayerCharacter*);
 
 UCLASS()
 class HELLDIVERS2_API APlayerCharacter : public ACharacter, public IPlayerAnimInterface, public IPlayerControl, public ICharacterHUDInterface, public IStratagemInterface
@@ -66,6 +67,19 @@ protected:
 
 private:
 	TObjectPtr<class ADiversPlayerController> DiversController;
+
+public:
+	FOnRespawnPlayer OnRespawnPlayer;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void Test();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	TObjectPtr<class ULevelSequence> LS_SpawnFromHellpod;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	TObjectPtr<class ULevelSequence> LS_ToStratagemSetting;
 
 // IA 관련
 private:
@@ -117,7 +131,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void VaultObstacles(const FInputActionValue& Value);
-	void Heal(const FInputActionValue& Value);
+	void UseSyringe(const FInputActionValue& Value);
 	void Diving();
 
 	void LeftButtonStarted();
@@ -125,10 +139,10 @@ protected:
 	void LeftButtonEnd();
 	void Zoom(const FInputActionValue& Value);
 	void ChangeWeaponAction(const FInputActionValue& Value);
-	void TakeItem(const FInputActionValue& Value);
+	void InteractItem(const FInputActionValue& Value);
 	void Reload();
 	void TakeStratagemBall(const FInputActionValue& Value);
-	void InputStratagemBall(const FInputActionValue& Value);
+	void InputMacro(const FInputActionValue& Value);
 
 	void Esc();
 
@@ -163,6 +177,8 @@ protected:
 	TObjectPtr<UAnimMontage> MT_PlayerRebirth;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TObjectPtr<UAnimMontage> MT_PlayerReady;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_ToInteractConsole;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TArray<TObjectPtr<UAnimMontage>> MT_Divings;
@@ -174,9 +190,9 @@ private:
 	void SoundWaveFind();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StratagemBallClass, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StratagemBallC, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USoundWave> SW_BallArrow;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StratagemBallClass, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StratagemBallC, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USoundWave> SW_BallLoopEnter;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AudioComp)
 	TObjectPtr<USoundWave> SW_DiveLand;
@@ -229,6 +245,9 @@ private:
 	void ChangeCameraMode();
 	void SetCameraData(const class UCameraData* CameraData);
 
+	UPROPERTY()
+	TObjectPtr<UMaterialInterface> M_Grayscale;
+
 // 아이템 관련
 private:
 	TObjectPtr<class UPlayerStatComponent> Stat;
@@ -242,9 +261,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = true))
 	TObjectPtr<AActor> NearbyObj;
 
+	uint8 bActivatedConsole : 1;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	TArray<class AItem*> GroundedItems;
+	TArray<class AInteractObj*> OverlappedObj;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
@@ -259,15 +280,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	TObjectPtr<class AItem> PreItem;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	TSubclassOf<class AItem> Syringe;
+	TSubclassOf<class AItem> SyringeC;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	TSubclassOf<class AItem> Grenade;
+	TSubclassOf<class AItem> GrenadeC;
 
 	UPROPERTY()
-	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+	TMap<EItemType, FTakeItemDelegateWrapper> TakeItemActions;
 
 protected:
 	void BeginWeaponEquip();
+
+	void FindItem();
 
 	void SwapWeapon(EItemType NextItemType);
 	void EquipWeapon(class AItem* Item);
@@ -275,7 +298,7 @@ protected:
 
 	void ChargeConsumedItem();
 
-	void TakeOutGreade();
+	void TakeOutGrenade();
 
 	void ThrowItem();
 
@@ -304,7 +327,7 @@ public:
 	EItemType GetCurrentItemType() override;
 	FORCEINLINE EPose GetCurrentPose() override { return CurrentPose; }
 	FORCEINLINE bool IsSucceededStratagem() override { return bSucceededStratagem; }
-	FORCEINLINE bool IsPullingPin() override { return bPullingPin; };
+	FORCEINLINE bool IsPullingPin() override { return bPullingPin; }
 	FORCEINLINE bool IsRightButton() override { return bRightButton; }
 
 	FVector2D rotateValue;
@@ -313,7 +336,9 @@ public:
 	void GetCurrentZ() override;
 	void Summoned() override;
 	void SetNearbyInteractable(AActor* Object) override;
-	void EnterHellpodBridge() override;
+	void EnterHellpodBridge(AActor* BridgeHellpod) override;
+	void Heal() override;
+	void SetInteractConsole() override;
 
 // 위젯 관련
 protected:
@@ -335,7 +360,7 @@ protected:
 
 	//스트라타젬 관련
 private:
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"), Category = "Stratagem")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"), Category = "Stratagem")
 	TArray<TObjectPtr<class UStratagemData>> Stratagems;
 	//TArray<TArray<uint8>> ActivatedMacros;
 
@@ -343,12 +368,12 @@ private:
 
 	uint8 bActivatedStratagemBall : 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StratagemBallClass, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StratagemBallC, Meta = (AllowPrivateAccess = "true"))
 	uint8 bSucceededStratagem : 1;
 
 	UPROPERTY()
-	TSubclassOf<class AItem> StratagemBallClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StratagemBallClass, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AItem> StratagemBallC;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StratagemBallC, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> TestStratagemC;
 
 	//FOnActiveStratagemDelegate OnActiveStratagem;
@@ -364,8 +389,13 @@ private:
 
 	void CalStratagemCoolTime(float DeltaTime);
 
+	void StratagemInput(uint8 InputMacro);
+
 public:
-	void PlayerRebirth();
+	UFUNCTION()
+	void Die();
+	void SpawnFromHellpod();
+	void Respawn();
 
 	// IStratagemInterface을(를) 통해 상속됨
 public:

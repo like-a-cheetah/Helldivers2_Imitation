@@ -4,18 +4,24 @@
 #include "Items/Gun.h"
 
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include "Data/GunData.h"
 #include "Bullet.h"
 #include "Interface/PlayerControl.h"
 #include "Animations/PlayerCharacterAnimInstance.h"
-#include "GameFramework/Character.h"
-
-#include "DrawDebugHelpers.h"
 
 AGun::AGun()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	MuzzleFlashVFX = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleFlashVFX"));
+	MuzzleFlashVFX->SetupAttachment(RootComponent);
+	MuzzleFlashVFX->SetActive(false);
 }
 
 void AGun::BeginPlay()
@@ -26,6 +32,15 @@ void AGun::BeginPlay()
 	{
 		SetGunData();
 		bCompleteReload = true;
+
+		AudioComp = UGameplayStatics::SpawnSound2D(this, SW_Shot);
+		if (AudioComp) AudioComp->Stop();
+
+		Rounds = MaxRounds;
+
+		FTransform Tr_Socket = SkelMeshComp->GetBoneTransform(MuzzleSocketName);
+		MuzzleFlashVFX->SetWorldLocation(Tr_Socket.GetLocation());
+		MuzzleFlashVFX->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
 	}
 }
 
@@ -44,7 +59,7 @@ void AGun::SetGunData()
 	RecoilVal = GunData->RecoilVal;
 	FireRate = GunData->FireRate / 3600.0f;
 	MaxRounds = GunData->MaxRounds;
-	Bullet = GunData->Bullet;
+	BulletC = GunData->Bullet;
 	MuzzleSocketName = GunData->MuzzleSocketName;
 	MT_PlayerReload = GunData->MT_PlayerReload;
 	GunReload = GunData->MT_GunReload;
@@ -52,6 +67,8 @@ void AGun::SetGunData()
 	MaxPitch = GunData->MaxPitch;
 	MinYaw = GunData->MinYaw;
 	MaxYaw = GunData->MaxYaw;
+
+	SW_Shot = GunData->SW_Shot;
 }
 
 void AGun::Recoil()
@@ -86,19 +103,31 @@ void AGun::Shot()
 			SpawnParam.Instigator = Cast<APawn>(GetOwner());
 		}
 		
-		GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, Direction, SpawnParam);
+		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(BulletC, SpawnLocation, Direction, SpawnParam);
+		IPlayerControl* Player = Cast<IPlayerControl>(GetOwner());
+		if(Player) Bullet->OnHitEnemy.BindLambda([Player]() { Player->OnBulletEnemyHit.ExecuteIfBound(); });
 		
 		FireRemainTime = FireRate;
-		Rounds--;
+		//Rounds--;
+
+		MuzzleFlashVFX->ActivateSystem(true);
 
 		Recoil();
+
+		//if(AudioComp) AudioComp->Play();
+
+		//FTimerHandle TimeHandle;
+	//	GetWorld()->GetTimerManager().SetTimer(TimeHandle, [this]() {
+		//	if (Rounds == 0 && AudioComp) AudioComp->FadeOut(0.1f, 0.0f);
+		//	}, 0.5f, false
+		//);
 	}
 }
 
 void AGun::Reload()
 {
 	Rounds = MaxRounds;
-	UE_LOG(LogTemp, Log, TEXT("Reload"));
+	//UE_LOG(LogTemp, Log, TEXT("Reload"));
 }
 
 bool AGun::IsBurst()
@@ -119,23 +148,23 @@ FVector AGun::GetImpactPoint()
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, AimTraceStart, AimTraceEnd, ECC_Pawn);
 
 	const USkeletalMeshSocket* LaserSocket = SkelMeshComp->GetSocketByName(LaserSocketName);
-	if (LaserSocket)
-	{
-		FVector LaserStart;
-		FRotator LaserWorldRotation;
-		SkelMeshComp->GetSocketWorldLocationAndRotation(LaserSocketName, LaserStart, LaserWorldRotation);
-		FVector LaserEnd = LaserStart + LaserWorldRotation.Vector() * 5000.0f;
-		DrawDebugLine(
-			GetWorld(),
-			LaserStart,
-			LaserEnd,
-			FColor::Green,
-			false,
-			0.01f,
-			0,
-			1.0f
-		);
-	}
+	//if (LaserSocket)
+	//{
+	//	FVector LaserStart;
+	//	FRotator LaserWorldRotation;
+	//	SkelMeshComp->GetSocketWorldLocationAndRotation(LaserSocketName, LaserStart, LaserWorldRotation);
+	//	FVector LaserEnd = LaserStart + LaserWorldRotation.Vector() * 5000.0f;
+	//	DrawDebugLine(
+	//		GetWorld(),
+	//		LaserStart,
+	//		LaserEnd,
+	//		FColor::Green,
+	//		false,
+	//		0.01f,
+	//		0,
+	//		1.0f
+	//	);
+	//}
 
 	if (bHit)
 	{
@@ -167,4 +196,9 @@ void AGun::PlayReloadMontage()
 bool AGun::IsCompleteReload()
 {
 	return bCompleteReload;
+}
+
+void AGun::StopShotSound()
+{
+	//if(AudioComp) AudioComp->FadeOut(0.1f, 0.0f);
 }

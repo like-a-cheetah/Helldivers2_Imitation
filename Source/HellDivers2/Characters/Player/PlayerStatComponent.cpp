@@ -15,7 +15,6 @@ void UPlayerStatComponent::InitializeComponent()
 
 	MaxHp = 100.f;
 	Hp = MaxHp;
-	bPlayerDead = false;
 }
 
 void UPlayerStatComponent::SetHp(float NewHp)
@@ -28,15 +27,9 @@ void UPlayerStatComponent::SetHp(float NewHp)
 float UPlayerStatComponent::ApplyDamage(float InDamage)
 {
 	float ResultDamage = Super::ApplyDamage(InDamage);
+	/*if (ResultDamage == -1.0f) return ResultDamage;
 
-	OnHpChanged.Broadcast(Hp);
-
-
-	if (bPlayerDead)
-	{
-		OnHpZero.Broadcast();
-		
-	}
+	OnHpChanged.Broadcast(Hp);*/
 
 	return ResultDamage;
 }

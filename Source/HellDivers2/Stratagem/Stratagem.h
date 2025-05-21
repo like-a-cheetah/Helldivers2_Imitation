@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Objects/Ship.h"
+
 #include "Stratagem.generated.h"
 
 UENUM(BlueprintType)

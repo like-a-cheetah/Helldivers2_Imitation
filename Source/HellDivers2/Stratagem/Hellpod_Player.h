@@ -30,6 +30,9 @@ private:
 	float InputX;
 	float InputY;
 
+	FVector ForwardVec;
+	FVector RightVec;
+
 public:
 	void AttchPlayer(class APlayerCharacter* Player);
 

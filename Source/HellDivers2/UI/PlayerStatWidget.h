@@ -29,6 +29,8 @@ protected:
 
 public:
 	UFUNCTION()
+	float GetHp();
+	UFUNCTION()
 	void SetHp(float CurrentHp);
 	UFUNCTION()
 	void SetAllItemNTextBlock(int32 GrenadeN, int32 MagazineN, int32 SyringeN);

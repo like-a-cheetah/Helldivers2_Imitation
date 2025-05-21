@@ -9,7 +9,6 @@
 
 #include "PlayerStatComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrenadeNChangedDelegate, int /*Grenade*/);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnItemChangedDelegate, int /*GrenadeN*/, int /*MagazineN*/, int /*SyringeN*/);
@@ -26,11 +25,10 @@ protected:
 	virtual void InitializeComponent() override;
 
 public:	
-	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
 	FOnItemChangedDelegate OnItemChanged;
 	FOnGrenadeNChangedDelegate OnGrenadeChanged;
 
-	void SetHp(float NewHp);
+	virtual void SetHp(float NewHp) override;
 	virtual float ApplyDamage(float InDamage) override;
 };

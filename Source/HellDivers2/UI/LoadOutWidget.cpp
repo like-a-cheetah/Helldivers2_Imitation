@@ -123,7 +123,11 @@ void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 
 void ULoadOutWidget::VisibleWidget(bool bShow)
 {
-	if (bShow) SetVisibility(ESlateVisibility::Visible);
+	if (bShow)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		PlayAnimation(StartAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse);
+	}
 	else SetVisibility(ESlateVisibility::Hidden);
 }
 

@@ -13,9 +13,9 @@ class UPlayerControl : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
+DECLARE_DELEGATE(FOnBulletEnemyHit);
+
+
 class HELLDIVERS2_API IPlayerControl
 {
 	GENERATED_BODY()
@@ -26,7 +26,11 @@ public:
 	virtual void GetCurrentZ() = 0;
 	virtual void Summoned() = 0;
 	virtual void SetNearbyInteractable(AActor* Object) = 0;
+	virtual void Heal() = 0;
 	
 	//각 오브젝트의 Interact에 따라 동작할 함수
-	virtual void EnterHellpodBridge() = 0;
+	virtual void EnterHellpodBridge(AActor* BridgeHellpod) = 0;
+	virtual void SetInteractConsole() = 0;
+
+	FOnBulletEnemyHit OnBulletEnemyHit;
 };

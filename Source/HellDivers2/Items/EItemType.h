@@ -16,10 +16,10 @@ enum class EItemType : uint8
 	Main,
 	Pistol,
 	Stratagem,
+	Projectile,
 
 	AmmoBox,
 
-	Projectile,
 	Heal,
 	StratagemBall
 };

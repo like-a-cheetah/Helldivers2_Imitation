@@ -59,6 +59,8 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bRightButton = PlayerAnimInterface->IsRightButton();
 		SuccedStratagem = PlayerAnimInterface->IsSucceededStratagem();
 		bPullingPin = PlayerAnimInterface->IsPullingPin();
+
+		if(!Movement->IsFalling()) CalculateFootGoalTransform(DeltaSeconds);
 	}
 
 	FRotator CalRecoilRot = FMath::RInterpTo(Recoil.Rotator(), RecoilTransform.Rotator(), GetWorld()->GetDeltaSeconds(), 25.0f);
@@ -87,6 +89,115 @@ float UPlayerCharacterAnimInstance::CalculateMovementYaw()
 		DeltaYaw += 360.0f;
 
 	return DeltaYaw;
+}
+
+void UPlayerCharacterAnimInstance::CalculateFootGoalTransform(float DeltaTime)
+{
+	USkeletalMeshComponent* Mesh = Owner->GetMesh();
+
+	float FootZ = Mesh->GetSocketLocation(TEXT("root_Socket")).Z;
+
+	auto FootTrace = [this, DeltaTime, Mesh, FootZ](FName FootSocketName, float& FootGoalZ, FRotator& FootGoalRot) {
+		FTransform FootTransform = Owner->GetMesh()->GetBoneTransform(FootSocketName, RTS_World);
+		
+		FVector LFootLoc = FootTransform.GetLocation();
+		LFootLoc.Z = FootZ + 30.0f;
+
+		FVector FootGoalTraceLoc = FootTransform.GetLocation();
+		FootGoalTraceLoc.Z = FootZ - 50.0f;	//기존 발의 z값보다 50 아래까지 추적
+
+		FCollisionShape Sphere = FCollisionShape::MakeSphere(20.0f);
+		FHitResult HitResult;
+		bool bHit = GetWorld()->SweepSingleByObjectType(
+			HitResult,
+			LFootLoc,
+			FootGoalTraceLoc,
+			FQuat::Identity,
+			ECC_WorldStatic,
+			Sphere
+		);
+
+		if (bHit)
+		{
+			float CalculatedZ = HitResult.ImpactPoint.Z - FootZ;
+			
+			FootGoalZ = FMath::FInterpTo(FootGoalZ, CalculatedZ, DeltaTime, 15.0f);
+
+			FVector GroundNormal = Owner->GetActorTransform().InverseTransformVectorNoScale(HitResult.Normal);
+			//FVector GroundNormal = HitResult.Normal;
+			float PitchAngleRad = FMath::RadiansToDegrees(FMath::Atan2(GroundNormal.Y, GroundNormal.Z));
+			float RollAngleRad = FMath::RadiansToDegrees(FMath::Atan2(GroundNormal.X, GroundNormal.Z));
+			FRotator CalculatedRot = FRotator(PitchAngleRad, 0.0f, -RollAngleRad);
+
+			FootGoalRot = FMath::RInterpTo(FootGoalRot, CalculatedRot, DeltaTime, 15.f);
+		}
+		else
+		{
+			FootGoalZ = 0;
+
+			FootGoalRot = FRotator::ZeroRotator;
+		}
+	};
+
+	FName FootSocketName = TEXT("l_foot");
+	if (Mesh->DoesSocketExist(FootSocketName))
+		FootTrace(FootSocketName, LFootGoalZ, LFootGoalRot);
+
+	FootSocketName = TEXT("r_foot");
+	if (Mesh->DoesSocketExist(FootSocketName))
+		FootTrace(FootSocketName, RFootGoalZ, RFootGoalRot);
+
+	//{
+	//	FTransform FootTransform = Owner->GetMesh()->GetBoneTransform(FootSocketName, RTS_World);
+	//
+	//	FVector LFootLoc = Tr_LFoot.GetLocation();
+	//	LFootLoc.Z = FootZ + 30.0f;
+	//
+	//	FVector FootGoalTraceLoc = Tr_LFoot.GetLocation();
+	//	FootGoalTraceLoc.Z = FootZ - 50.0f;
+	//
+	//	FHitResult HitResult;
+	//	bool bHit = GetWorld()->SweepSingleByObjectType(
+	//		HitResult, 
+	//		LFootLoc,
+	//		FootGoalTraceLoc,
+	//		FQuat::Identity, 
+	//		ECC_WorldStatic, 
+	//		Sphere
+	//		);
+	//	DrawDebugCylinder(GetWorld(), LFootLoc, FootGoalTraceLoc, 25.0f, 4, FColor::Blue, false, 0.1f);
+	//
+	//	float CalculatedZ = HitResult.ImpactPoint.Z - FootZ;
+	//
+	//	if (bHit) LFootGoalZ = FMath::FInterpTo(LFootGoalZ, CalculatedZ, DeltaTime, 15.0f);
+	//	else LFootGoalZ = 0;
+	//}
+	//
+	//{
+	//	FTransform Tr_RFoot = Mesh->GetBoneTransform(TEXT("r_foot"), RTS_World);
+	//
+	//	FVector RFootLoc = Tr_RFoot.GetLocation();
+	//	RFootLoc.Z = FootZ + 30.0f;
+	//
+	//	FVector FootGoalTraceLoc = Tr_RFoot.GetLocation();
+	//	FootGoalTraceLoc.Z = FootZ - 50.0f;
+	//
+	//	FHitResult HitResult;
+	//	bool bHit = GetWorld()->SweepSingleByObjectType(
+	//		HitResult, 
+	//		RFootLoc,
+	//		FootGoalTraceLoc,
+	//		FQuat::Identity, 
+	//		ECC_WorldStatic, 
+	//		Sphere
+	//		);
+	//	DrawDebugCylinder(GetWorld(), RFootLoc, FootGoalTraceLoc, 25.0f, 4, FColor::Blue, false, 0.1f);
+	//
+	//	float CalculatedZ = HitResult.ImpactPoint.Z - FootZ;
+	//
+	//	if (bHit) RFootGoalZ = FMath::FInterpTo(RFootGoalZ, CalculatedZ, DeltaTime, 15.0f);
+	//	else RFootGoalZ = 0;
+	//}
 }
 
 void UPlayerCharacterAnimInstance::ProceduralRecoil(float Multipler)

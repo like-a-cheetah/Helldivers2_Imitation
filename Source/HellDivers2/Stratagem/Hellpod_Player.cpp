@@ -43,23 +43,28 @@ void AHellpod_Player::AttchPlayer(APlayerCharacter* Player)
 	FAttachmentTransformRules CustomRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	Player->AttachToActor(this, CustomRules, FName(TEXT("footrest_Socket")));
 
-	OnPlayerArrive.BindUObject(Player, &APlayerCharacter::PlayerRebirth);
+	ForwardVec = Player->GetActorForwardVector();
+	RightVec = Player->GetActorRightVector();
+
+	OnPlayerArrive.BindUObject(Player, &APlayerCharacter::SpawnFromHellpod);
 }
 
 void AHellpod_Player::MoveX(float Value)
 {
-	if (!CheckOnce)
+	if (!bDecisionLandingPoint)
 	{
-		float ForceMagnitude = Value * 200000.0f;
-		HellpodMesh->AddForce(FVector(0.0f, ForceMagnitude, 0.0f));
+		float ForceMagnitude = Value * 50000.0f;
+		FVector tmp = RightVec * ForceMagnitude;
+		HellpodMesh->AddImpulse(tmp);
 	}
 }
 
 void AHellpod_Player::MoveY(float Value)
 {
-	if (!CheckOnce)
+	if (!bDecisionLandingPoint)
 	{
-		float ForceMagnitude = Value * 200000.0f;
-		HellpodMesh->AddForce(FVector(ForceMagnitude, 0.0f, 0.0f));
+		float ForceMagnitude = Value * 50000.0f;
+		FVector tmp = ForwardVec * ForceMagnitude;
+		HellpodMesh->AddImpulse(tmp);
 	}
 }

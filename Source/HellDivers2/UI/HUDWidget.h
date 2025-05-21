@@ -24,6 +24,8 @@ public:
 
 	void ActiveStratagemWidget(bool bActive);
 
+	void PlayEnemyHitAnim();
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -36,4 +38,16 @@ protected:
 private:
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	TObjectPtr<class UWidgetAnimation> ActiveStratagemAnimation;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<class UWidgetAnimation> WAnim_TakeDamage;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<class UWidgetAnimation> WAnim_Heal;
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<class UWidgetAnimation> WAnim_CriticalHealth;
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<class UWidgetAnimation> WAnim_OffDamageEffect;
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<class UWidgetAnimation> WAnim_HitEnemy;
 };

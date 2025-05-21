@@ -1,21 +1,9 @@
 #include "Characters/Components/CharacterStatComponent.h"
-#include "Characters/Player/PlayerCharacter.h"
 
 UCharacterStatComponent::UCharacterStatComponent()
 {
 	MaxHp = 100.f;
 	Hp = MaxHp;
-	bPlayerDead = false;
-}
-
-void UCharacterStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void UCharacterStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UCharacterStatComponent::SetMaxHp(float NewMaxHP)
@@ -30,41 +18,23 @@ void UCharacterStatComponent::SetHp(float NewHp)
 
 float UCharacterStatComponent::ApplyDamage(float InDamage)
 {
-	//float PrevHp = Hp;
-	//float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
+	UE_LOG(LogTemp, Log, TEXT("%s attacked %f Damage"), *GetOwner()->GetName(), InDamage);
+	if (Hp <= 0.0f) return -1.0f;
 
-	//SetHp(PrevHp - ActualDamage);
+	float PrevHp = Hp;
+	float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
 
-	//
+	SetHp(PrevHp - ActualDamage);	
 
-	//if (Hp <= KINDA_SMALL_NUMBER)
-	//{
-	//	if (Cast<APlayerCharacter>(owner))
-	//	{
-	//		bPlayerDead = true;
-	//	
-	//		Cast<APlayerCharacter>(owner)->Revive();
-	//	
-	//	}
-	//	else {
-	//
+	if (Hp <= KINDA_SMALL_NUMBER)
+	{
+		if (OnHpZero.IsBound())
+		{
+			//UE_LOG(LogTemp, Log, TEXT("Bound"));
+			OnHpZero.Broadcast();
+		}
+	}
 
-	//		owner->RagdollSystemOperation();
-	//		owner->DestroyWithTimer(4.f); // Ŀ���� �Լ�
-	//		owner->SetDead(true);
-	//	}
-
-
-	//
-	//
-	//}
-	//else
-	//{
-	//	bPlayerDead = false;
-	//}
-
-	//return ActualDamage;
-
-	return 0.0f;
+	return ActualDamage;
 }
 

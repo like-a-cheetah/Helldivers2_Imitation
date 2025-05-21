@@ -55,7 +55,11 @@ AHellpod::AHellpod()
 	static ConstructorHelpers::FObjectFinder<USoundWave> SW_HatchOpenRef(TEXT("/Script/Engine.SoundWave'/Game/HellDivers2/Stratagem/Source/Open_Hellpod_Hatch_0x3cec0b1c500ab97.Open_Hellpod_Hatch_0x3cec0b1c500ab97'"));
 	if (SW_HatchOpenRef.Object) SW_HatchOpen = SW_HatchOpenRef.Object;
 
-	CheckOnce = false;
+	bDecisionLandingPoint = false;
+
+	HellpodMesh->BodyInstance.bLockXRotation = true;
+	HellpodMesh->BodyInstance.bLockYRotation = true;
+	HellpodMesh->BodyInstance.bLockZRotation = true;
 }
 
 void AHellpod::BeginPlay()
@@ -72,35 +76,35 @@ void AHellpod::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
-	CheckToLanding();
+	if(!bDecisionLandingPoint) CheckToLanding();
 }
 
 void AHellpod::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	UE_LOG(LogTemp, Log, TEXT("%s Damaged"), *OtherActor->GetName());
+	//UE_LOG(LogTemp, Log, TEXT("%s Damaged"), *OtherActor->GetName());
 }
 
 void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	UE_LOG(LogTemp, Log, TEXT("%s Arrive"), *OtherActor->GetName());
-
-	AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
-	HellpodMesh->SetCollisionProfileName(TEXT("NoCollision"));
-	HellpodMesh->SetGenerateOverlapEvents(false);
-	HellpodMesh->SetSimulatePhysics(false);
-
-	if(OnDestoryBall.IsBound()) OnDestoryBall.Execute();
+	//UE_LOG(LogTemp, Log, TEXT("%s Arrive"), *OtherActor->GetName());
 
 	BoxCollider->SetGenerateOverlapEvents(false);
 
-	AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
-	HellpodMesh->SetCollisionProfileName(TEXT("NoCollision"));
-	HellpodMesh->SetGenerateOverlapEvents(false);
+	if (OnDestoryBall.IsBound()) OnDestoryBall.Execute();
+
+	//AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
+
 	HellpodMesh->SetSimulatePhysics(false);
+	HellpodMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	HellpodMesh->SetCollisionProfileName(TEXT("BlockAll"));
+	HellpodMesh->SetCollisionObjectType(ECC_WorldDynamic);
+	HellpodMesh->SetCollisionResponseToAllChannels(ECR_Block);
+	HellpodMesh->SetGenerateOverlapEvents(false);
+	HellpodMesh->SetAllBodiesSimulatePhysics(false);
+	HellpodMesh->SetAllBodiesPhysicsBlendWeight(0.0f);
 
 	FVector DropPoint = GetActorLocation();
-	DropPoint.Z = SweepHitResult.ImpactPoint.Z;
+	//DropPoint.Z = SweepHitResult.ImpactPoint.Z + 100.0;
 
 	SetActorLocation(DropPoint);
 
@@ -126,7 +130,7 @@ void AHellpod::CheckToLanding()
 	FVector StartPos = GetActorLocation();
 	StartPos.Z -= 500.0f;
 	FVector EndPos = StartPos;
-	EndPos.Z -= 5000.0f;
+	EndPos.Z -= 6000.0f;
 	float Radius = 50.0f;
 	FHitResult OutHit;
 
@@ -136,7 +140,7 @@ void AHellpod::CheckToLanding()
 		StartPos,
 		EndPos,
 		Radius,
-		UEngineTypes::ConvertToTraceType(ECC_WorldStatic),
+		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel7),
 		false,
 		Temp,
 		EDrawDebugTrace::ForOneFrame,
@@ -144,11 +148,11 @@ void AHellpod::CheckToLanding()
 		true
 	);
 
-	if (bHit && !CheckOnce) {
-		CheckOnce = true;
+	if (bHit && !bDecisionLandingPoint) {
+		bDecisionLandingPoint = true;
 
 		HellpodMesh->PlayAnimation(MT_ReadyToRanding, false);
-		HellpodMesh->SetLinearDamping(1.5f);
+		HellpodMesh->SetLinearDamping(1.8f);
 	}
 }
 

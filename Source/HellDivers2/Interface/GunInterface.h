@@ -37,4 +37,6 @@ public:
 	virtual void PlayReloadMontage() = 0;
 
 	virtual bool IsCompleteReload() = 0;
+
+	virtual void StopShotSound() = 0;
 };

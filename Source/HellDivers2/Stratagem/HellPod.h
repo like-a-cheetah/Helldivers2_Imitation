@@ -31,7 +31,7 @@ protected:
 	UFUNCTION()
 	virtual void SpawnAttachMachine();
 
-	bool CheckOnce;
+	bool bDecisionLandingPoint;
 
 	UPROPERTY()
 	TObjectPtr<UAnimMontage> MT_RecallPlayer;

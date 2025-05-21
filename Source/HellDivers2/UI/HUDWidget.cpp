@@ -38,6 +38,24 @@ void UHUDWidget::UpdateGrenadeN(int32 GrenadeN)
 
 void UHUDWidget::UpdateHpBar(float NewCurrentHp)
 {
+	NewCurrentHp = NewCurrentHp / 100.0f;
+	float PreHP = PlayerStatWidget->GetHp();
+
+	//UE_LOG(LogTemp, Log, TEXT("New : %f, Pre : %f"), NewCurrentHp, PreHP);
+
+	if (PreHP > NewCurrentHp)
+	{
+		if(NewCurrentHp > 0.5f) PlayAnimation(WAnim_TakeDamage);
+		else PlayAnimation(WAnim_CriticalHealth, 0.0f, 9999999);
+	}
+	else if (PreHP < NewCurrentHp)
+	{
+		StopAnimation(WAnim_TakeDamage);
+		StopAnimation(WAnim_CriticalHealth);
+		PlayAnimation(WAnim_OffDamageEffect);
+		PlayAnimation(WAnim_Heal);
+	}
+
 	PlayerStatWidget->SetHp(NewCurrentHp);
 }
 
@@ -45,6 +63,11 @@ void UHUDWidget::ActiveStratagemWidget(bool bActive)
 {
 	if(bActive) PlayAnimation(ActiveStratagemAnimation);
 	else PlayAnimation(ActiveStratagemAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
+}
+
+void UHUDWidget::PlayEnemyHitAnim()
+{
+	PlayAnimation(WAnim_HitEnemy);
 }
 
 //void UHUDWidget::CreateInformWidget(FString Key, FString Inform)

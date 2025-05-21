@@ -14,8 +14,12 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
+#include "Engine/TextureRenderTarget2D.h"	
+#include "LevelSequence.h"
+#include "LevelSequencePlayer.h"
+#include "LevelSequenceActor.h"
 
+#include "Tags.h"
 #include "Helldivers2Instance.h"
 #include "DiversPlayerController.h"
 #include "Items/Item.h"
@@ -44,7 +48,7 @@ APlayerCharacter::APlayerCharacter()
 	bUseControllerRotationYaw = false;
 
 	//GetCapsuleComponent()->InitCapsuleSize();
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEnd);
 
@@ -67,8 +71,8 @@ APlayerCharacter::APlayerCharacter()
 	if (SkeletalMeshRef.Object)	GetMesh()->SetSkeletalMesh(SkeletalMeshRef.Object);
 	HandSocketName = TEXT("attach_hand_r소켓");
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef = (TEXT("/Game/HellDivers2/Characters/Player/ABP_PlayerCharacter.ABP_PlayerCharacter_C"));
-	if (SkeletalMeshRef.Object)	GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	//static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef = (TEXT("/Game/HellDivers2/Characters/Player/ABP_PlayerCharacter.ABP_PlayerCharacter_C"));
+	//if (AnimInstanceClassRef.Class)	GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 
 	InputActionFind();
 	MontageFind();
@@ -76,33 +80,33 @@ APlayerCharacter::APlayerCharacter()
 	InitCameraSet();
 
 	Stat = CreateDefaultSubobject<UPlayerStatComponent>(TEXT("PlayerStat"));
+	Stat->OnHpZero.AddDynamic(this, &APlayerCharacter::Die);
 
-	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::ChargeItem)));
+	TakeItemActions.Add(EItemType::AmmoBox, FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::ChargeItem)));
 
-	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
-	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
-	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+	TakeItemActions.Add(EItemType::Pistol, FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+	TakeItemActions.Add(EItemType::Main, FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+	TakeItemActions.Add(EItemType::Stratagem, FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
 
-	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::ChargeItem)));
+	//ImpactWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ImpactWidget"));
+	//ImpactWidget->SetupAttachment(GetMesh());
+	//static ConstructorHelpers::FClassFinder<UUserWidget> AimWidgetRef(TEXT("/Game/HellDivers2/UI/InGame/ImpactWidget.ImpactWidget_C"));
+	//if (AimWidgetRef.Class)
+	//{
+	//	ImpactWidget->SetWidgetClass(AimWidgetRef.Class);
+	//	ImpactWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	//	ImpactWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//	ImpactWidget->SetGenerateOverlapEvents(false);
+	//}
 
-	ImpactWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ImpactWidget"));
-	ImpactWidget->SetupAttachment(GetMesh());
-	static ConstructorHelpers::FClassFinder<UUserWidget> AimWidgetRef(TEXT("/Game/HellDivers2/UI/InGame/ImpactWidget.ImpactWidget_C"));
-	if (AimWidgetRef.Class)
-	{
-		ImpactWidget->SetWidgetClass(AimWidgetRef.Class);
-		ImpactWidget->SetWidgetSpace(EWidgetSpace::Screen);
-		ImpactWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
-
-	static ConstructorHelpers::FClassFinder<AItem> StratagemRef(TEXT("/Game/HellDivers2/Weapons/StratagemBall.StratagemBall_C"));
-	if (StratagemRef.Class)	StratagemBallClass = StratagemRef.Class;
+	static ConstructorHelpers::FClassFinder<AItem> StratagemRef(TEXT("/Game/HellDivers2/Weapons/BP_StratagemBall.BP_StratagemBall_C"));
+	if (StratagemRef.Class)	StratagemBallC = StratagemRef.Class;
 
 	static ConstructorHelpers::FClassFinder<AItem> SyringeRef(TEXT("/Game/HellDivers2/Items/Syringe.Syringe_C"));
-	if (SyringeRef.Class)	Syringe = SyringeRef.Class;
+	if (SyringeRef.Class)	SyringeC = SyringeRef.Class;
 
 	static ConstructorHelpers::FClassFinder<AItem> GrenadeRef(TEXT("/Game/HellDivers2/Weapons/EXPLOSION.EXPLOSION_C"));
-	if (GrenadeRef.Class)	Grenade = GrenadeRef.Class;
+	if (GrenadeRef.Class)	GrenadeC = GrenadeRef.Class;
 
 	HandleItem = nullptr;
 	PreItem = nullptr;
@@ -110,14 +114,35 @@ APlayerCharacter::APlayerCharacter()
 	GunClassPaths.Add(TEXT("/Game/HellDivers2/Weapons/LIBERATOR.LIBERATOR_C"));
 	GunClassPaths.Add(TEXT("/Game/HellDivers2/Weapons/PEACEMAKER.PEACEMAKER_C"));
 
-	
-	//스트라타젬 구현
+	//실제 게임 시뮬시 주석
+	//스트라타젬 구현 데모
 	static ConstructorHelpers::FObjectFinder<UStratagemData> ResupplyStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Resupply/Resupply.Resupply'"));
-	if (ResupplyStratagemDataRef.Object) 
-		Stratagems.Add(ResupplyStratagemDataRef.Object);
-	static ConstructorHelpers::FObjectFinder<UStratagemData> OrbitStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Orbital_120mm_HE_Barrage_Data.Orbital_120mm_HE_Barrage_Data'"));
-	if (OrbitStratagemDataRef.Object)
-		Stratagems.Add(OrbitStratagemDataRef.Object);
+	if (ResupplyStratagemDataRef.Object) Stratagems.Add(ResupplyStratagemDataRef.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> OrbitStratagemDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/120mm_HE_Barrage/Orbital_120mm_HE_Barrage_Data.Orbital_120mm_HE_Barrage_Data'"));
+	if (OrbitStratagemDataRef.Object) Stratagems.Add(OrbitStratagemDataRef.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> dsadsaDataRef(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Precision_Strike_Data/Orbital_Precision_Strike_Data.Orbital_Precision_Strike_Data'"));
+	if (dsadsaDataRef.Object) Stratagems.Add(dsadsaDataRef.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> asd(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Gatling_Barrage/Orbital_Gatling_Barrage_Data.Orbital_Gatling_Barrage_Data'"));
+	if (asd.Object) Stratagems.Add(asd.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> a(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/380mm_HE_Barrage/Orbital_380mm_HE_Barrage_Data.Orbital_380mm_HE_Barrage_Data'"));
+	if (a.Object) Stratagems.Add(a.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> b(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Walking_Barrage/Orbital_Walking_Barrage_Data.Orbital_Walking_Barrage_Data'"));
+	if (b.Object) Stratagems.Add(b.Object);
+	static ConstructorHelpers::FObjectFinder<UStratagemData> c(TEXT("/Script/HellDivers2.StratagemData'/Game/HellDivers2/Stratagem/Orbit/Laser/Orbital_Laser_Data.Orbital_Laser_Data'"));
+	if (c.Object) Stratagems.Add(c.Object);
+	//실제 게임 시뮬시 주석
+
+	static ConstructorHelpers::FObjectFinder<ULevelSequence> LS_SpawnFromHellpodRef(TEXT("/Script/LevelSequence.LevelSequence'/Game/HellDivers2/Sequencer/LS_SpawnHellpodCameraAnim.LS_SpawnHellpodCameraAnim'"));
+	if(LS_SpawnFromHellpodRef.Object) LS_SpawnFromHellpod = LS_SpawnFromHellpodRef.Object;
+
+	Tags.Add(TAG_PLAYER);
+}
+
+void APlayerCharacter::Test()
+{
+	//UGameplayCamerasSubsystem* fds = NewObject<UGameplayCamerasSubsystem>();
+	//FCameraAnimationParams AnimParam;
+	//fds->PlayCameraAnimation(DiversController, SpawnFromHellpodCameraAnim, AnimParam);
 }
 
 void APlayerCharacter::InputActionFind()
@@ -242,6 +267,9 @@ void APlayerCharacter::MontageFind() {
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_PlayerReadyRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_PlayerReady.MT_PlayerReady'"));
 	if (MT_PlayerReadyRef.Object)	MT_PlayerReady = MT_PlayerReadyRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_ToInteractConsoleRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Player/EditedAnimations/MT_PlayerReady.MT_PlayerReady'"));
+	if (MT_ToInteractConsoleRef.Object)	MT_ToInteractConsole = MT_ToInteractConsoleRef.Object;
 }
 
 void APlayerCharacter::SoundWaveFind()
@@ -301,20 +329,29 @@ void APlayerCharacter::InitCameraSet()
 
 	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> CharCaptureTextureRef(TEXT("/Game/HellDivers2/UI/Source/LoadOut/RT_CameraView.RT_CameraView"));
 	if(CharCaptureTextureRef.Succeeded()) SceneCaptureComp->TextureTarget = CharCaptureTextureRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> M_GrayscaleRef(TEXT("/Script/Engine.Material'/Game/HellDivers2/Material/M_Grayscale.M_Grayscale'"));
+	if (M_GrayscaleRef.Succeeded()) M_Grayscale = M_GrayscaleRef.Object;
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	BeginWeaponEquip();
+	 
+	////실제 게임 시뮬
 	FString LevelName = GetLevel()->GetOuter()->GetName();
 	if (LevelName == "InGameTestmap")
 	{
-		GetCharacterMovement()->SetMovementMode(MOVE_None);
+		//GetCharacterMovement()->SetMovementMode(MOVE_None);
+		//BeginWeaponEquip();
 	}
-	else
-	{
-	}
+	//else
+	//{
+	//}
+	////실제 게임 시뮬
+	
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -327,14 +364,16 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 
 	FString LevelName = GetLevel()->GetOuter()->GetName();
+
+	//실제 게임 시뮬
 	if (LevelName == "InGameTestmap")
 	{
-		bActiveLookAction = false;
-		CameraBoom->bDoCollisionTest = false;
-		FollowCamera->SetRelativeLocation(FVector(550.0, 0.0f, 500.0f));
-		FollowCamera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+		//bActiveLookAction = false;
+		//CameraBoom->bDoCollisionTest = false;
+		//FollowCamera->SetRelativeLocation(FVector(550.0, 0.0f, 500.0f));
+		//FollowCamera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
 
-		GetCharacterMovement()->GravityScale = 0.0f;
+		//GetCharacterMovement()->GravityScale = 0.0f;
 
 		SetStratagemFromGInst();
 	}
@@ -343,25 +382,27 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 		Summoned();
 		SceneCaptureComp->ShowOnlyActorComponents(this, true);
 	}
+	//실제 게임 시뮬
 }
 
 void APlayerCharacter::Summoned()	//Rebirth 애니메이션 재생 후 호출 될 함수
 {
 	bActiveLookAction = true;
 	CameraBoom->bDoCollisionTest = true;
+
 	FollowCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	FollowCamera->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	SetCameraData(CameraDataManager[0]);
 
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCharacterMovement()->GravityScale = 1.0f;
-
 }
 
-// Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//FindItem();
 
 	CheckDiveLanding();
 
@@ -380,20 +421,19 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	AItem* DroppedItem = Cast<AItem>(OtherActor);
+	AInteractObj* DroppedItem = Cast<AInteractObj>(OtherActor);
 	if (DroppedItem)
 	{
-		GroundedItems.Add(DroppedItem);
+		OverlappedObj.Add(DroppedItem);
 	}
 }
 
 void APlayerCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	AItem* temp = Cast<AItem>(OtherActor);
-	GroundedItems.Remove(temp);
+	AInteractObj* temp = Cast<AInteractObj>(OtherActor);
+	OverlappedObj.Remove(temp);
 }
 
-// Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -408,7 +448,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	EnhancedInputComponent->BindAction(DivingAction, ETriggerEvent::Started, this, &APlayerCharacter::Diving);
 	EnhancedInputComponent->BindAction(IA_Vault, ETriggerEvent::Triggered, this, &APlayerCharacter::VaultObstacles);
 	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &APlayerCharacter::VaultObstacles);
-	EnhancedInputComponent->BindAction(IA_Heal, ETriggerEvent::Started, this, &APlayerCharacter::Heal);
+	EnhancedInputComponent->BindAction(IA_Heal, ETriggerEvent::Started, this, &APlayerCharacter::UseSyringe);
 
 	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &APlayerCharacter::LeftButtonStarted);
 	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LeftButtonTriggered);
@@ -416,16 +456,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APlayerCharacter::Zoom);
 	EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::Zoom);
 	EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Started, this, &APlayerCharacter::ChangeWeaponAction);
-	EnhancedInputComponent->BindAction(TakeItemAction, ETriggerEvent::Started, this, &APlayerCharacter::TakeItem);
+	EnhancedInputComponent->BindAction(TakeItemAction, ETriggerEvent::Started, this, &APlayerCharacter::InteractItem);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &APlayerCharacter::Reload);
 	EnhancedInputComponent->BindAction(IA_TakeStratagemBall, ETriggerEvent::Started, this, &APlayerCharacter::TakeStratagemBall);
 	EnhancedInputComponent->BindAction(IA_TakeStratagemBall, ETriggerEvent::Completed, this, &APlayerCharacter::TakeStratagemBall);
-	EnhancedInputComponent->BindAction(IA_InputStratagemBallW, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
-	EnhancedInputComponent->BindAction(IA_InputStratagemBallS, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
-	EnhancedInputComponent->BindAction(IA_InputStratagemBallD, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
-	EnhancedInputComponent->BindAction(IA_InputStratagemBallA, ETriggerEvent::Started, this, &APlayerCharacter::InputStratagemBall);
-	EnhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &APlayerCharacter::Interact);
-
+	EnhancedInputComponent->BindAction(IA_InputStratagemBallW, ETriggerEvent::Started, this, &APlayerCharacter::InputMacro);
+	EnhancedInputComponent->BindAction(IA_InputStratagemBallS, ETriggerEvent::Started, this, &APlayerCharacter::InputMacro);
+	EnhancedInputComponent->BindAction(IA_InputStratagemBallD, ETriggerEvent::Started, this, &APlayerCharacter::InputMacro);
+	EnhancedInputComponent->BindAction(IA_InputStratagemBallA, ETriggerEvent::Started, this, &APlayerCharacter::InputMacro);
+	//EnhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &APlayerCharacter::Interact);
 
 	EnhancedInputComponent->BindAction(IA_Escape, ETriggerEvent::Started, this, &APlayerCharacter::Esc);
 }
@@ -436,7 +475,7 @@ void APlayerCharacter::ChangeWeaponAction(const FInputActionValue& Value)
 
 	if (WeaponIndex == int32(EItemType::Projectile))
 	{
-		TakeOutGreade();
+		TakeOutGrenade();
 	}
 	else
 	{
@@ -475,22 +514,25 @@ void APlayerCharacter::SwapWeapon(EItemType NextItemType)
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(MT_EndDelegate);
 }
 
-void APlayerCharacter::TakeOutGreade()
+void APlayerCharacter::TakeOutGrenade()
 {
 	if (GrenadeNum <= 0)
 		return;
+
+	FActorSpawnParameters SpawnParam;
+	SpawnParam.Owner = this;
 
 	if (HandleItem)
 	{
 		PlayAnimMontage(HandleItem->GetInsertMontage());
 
 		FOnMontageEnded MT_EndDelegate;
-		MT_EndDelegate.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+		MT_EndDelegate.BindLambda([this, SpawnParam](UAnimMontage* Montage, bool bInterrupted)
 			{
 				AttachToSocket(HandleItem, HandleItem->GetSocketName());
 				PreItem = HandleItem;
 
-				HandleItem = GetWorld()->SpawnActor<AItem>(Grenade);
+				HandleItem = GetWorld()->SpawnActor<AItem>(GrenadeC, SpawnParam);
 
 				AttachToSocket(HandleItem, HandSocketName);
 				PlayAnimMontage(HandleItem->GetTakeOutMontage());
@@ -500,7 +542,7 @@ void APlayerCharacter::TakeOutGreade()
 	}
 	else
 	{
-		HandleItem = GetWorld()->SpawnActor<AItem>(Grenade);
+		HandleItem = GetWorld()->SpawnActor<AItem>(GrenadeC, SpawnParam);
 
 		AttachToSocket(HandleItem, HandSocketName);
 		PlayAnimMontage(HandleItem->GetTakeOutMontage());
@@ -512,14 +554,20 @@ void APlayerCharacter::ThrowItem()
 	FRotator Direction = GetControlRotation();
 	Direction.Pitch += 10.0f;
 
-	HandleItem->GetSkelMeshComp()->SetSimulatePhysics(true);
-	HandleItem->GetSkelMeshComp()->AddImpulse(Direction.Vector() * 2000.0f);
+	HandleItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	HandleItem->Throw(Direction.Vector() * 2000.0f);
+	HandleItem = nullptr;
+
+	AStratagemBall* StratagemBall = Cast<AStratagemBall>(HandleItem);
+	if (StratagemBall)
+	{
+		Direction.Pitch = 0.0f;
+		StratagemBall->SetAbsoluteForwardVector(Direction);
+	}
 
 	SetLookingForward(true);
 
 	GetMesh()->GetAnimInstance()->Montage_Play(MT_ThrowStratagemBall, 1.0f, EMontagePlayReturnType::MontageLength, 0.0f, false);
-
-	HandleItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 }
 
 EItemType APlayerCharacter::GetCurrentItemType()
@@ -543,6 +591,7 @@ void APlayerCharacter::SetupHUDWidget(UUserWidget* InHUDWidget)
 	{
 		HUDWidget->UpdateHpBar(Stat->GetCurHp());
 		HUDWidget->UpdateStat(GrenadeNum, HandleItem ? GunsMagazineN[HandleItem->GetItemType()] : 0, SyringeNum);
+		OnBulletEnemyHit.BindLambda([HUDWidget]() { HUDWidget->PlayEnemyHitAnim(); });
 
 		Stat->OnHpChanged.AddUObject(HUDWidget, &UHUDWidget::UpdateHpBar);
 		Stat->OnItemChanged.AddUObject(HUDWidget, &UHUDWidget::UpdateStat);
@@ -574,7 +623,14 @@ void APlayerCharacter::SetStratagemFromGInst()
 		{
 			Stratagems.Add(StratagemData);
 		}
-		
+
+		UStratagemData* ResupplyStratagemData = LoadObject<UStratagemData>(nullptr, TEXT("/Game/HellDivers2/Stratagem/Resupply/Resupply.Resupply"));
+		if (ResupplyStratagemData) Stratagems.Add(ResupplyStratagemData);
+		ResupplyStratagemData = LoadObject<UStratagemData>(nullptr, TEXT("/Game/HellDivers2/Stratagem/SupplyWeapon/GR-8_RECOILESS.GR-8_RECOILESS"));
+		if (ResupplyStratagemData) Stratagems.Add(ResupplyStratagemData);
+		ResupplyStratagemData = LoadObject<UStratagemData>(nullptr, TEXT("/Game/HellDivers2/Stratagem/Orbit/Precision_Strike_Data/Orbital_Precision_Strike_Data.Orbital_Precision_Strike_Data"));
+		if (ResupplyStratagemData) Stratagems.Add(ResupplyStratagemData);
+
 		//if(OnStratagemSet.IsBound()) OnStratagemSet.Execute(Stratagems);
 	}
 }
@@ -583,7 +639,7 @@ void APlayerCharacter::CalStratagemCoolTime(float DeltaTime)
 {
 	for (auto Stratagem : Stratagems)
 	{
-		if (Stratagem->bCoolTime)
+		if (!Stratagem.IsNull() && Stratagem->bCoolTime)
 		{
 			Stratagem->CoolTime -= DeltaTime;
 
@@ -594,21 +650,141 @@ void APlayerCharacter::CalStratagemCoolTime(float DeltaTime)
 			{
 				Stratagem->bCoolTime = false;
 				Stratagem->OnHideMacroBox.Execute(false);
+				Stratagem->OnActiveWidget.Execute(true);
 			}
 		}
 	}
 }
 
-void APlayerCharacter::PlayerRebirth()
+void APlayerCharacter::StratagemInput(uint8 InputMacro)
 {
-	UE_LOG(LogTemp, Log, TEXT("Rebirth"));
+	bool bAllInactive = true;
+
+	for (auto Stratagem : Stratagems)
+	{
+		if (!Stratagem->IsActive() || MacroIndex >= Stratagem->Macro.Num())
+		{
+			if (Stratagem->IsActive())
+				Stratagem->SetbActive(false);
+			continue;
+		}
+		else if (Stratagem->bCoolTime)
+		{
+
+		}
+		else
+		{
+			const uint8 MacroKey = Stratagem->Macro[MacroIndex];
+			if (MacroKey == InputMacro)
+			{
+				bAllInactive = false;
+
+				const uint8 MacroN = Stratagem->Macro.Num();
+				if (MacroIndex == MacroN - 1)	//입력한 키가 마지막 매크로일 경우
+				{
+					Stratagem->CorrectMacro(MacroIndex);
+
+					bSucceededStratagem = true;
+
+					UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoopEnter, GetActorLocation());
+
+					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+					SetLookingForward(false);
+
+					OnSetStratagemCoolTime.BindUObject(Stratagem, &UStratagemData::SetCoolTime);
+					Stratagem->OnHideMacroBox.Execute(true);
+
+					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem(), (uint8)Stratagem->GetStratagemType());
+
+					for (int i = 0; i < Stratagems.Num(); i++)
+					{
+						if (Stratagems[i] != Stratagem)
+							Stratagems[i]->ShowConditionWidgetDelegate.Execute(false);
+					}
+
+					return;
+				}
+				else //옳은 키를 입력했을 때
+				{
+					Stratagem->CorrectMacro(MacroIndex);
+				}
+			}
+			else Stratagem->SetbActive(false);
+		}
+	}
+
+	if (!bAllInactive)
+		MacroIndex++;
+	else
+	{
+		MacroIndex = 0;
+
+		for (auto Stratagem : Stratagems)
+			if (!Stratagem->bCoolTime) Stratagem->SetbActive(true);
+	}
+}
+
+void APlayerCharacter::Die()
+{
+	//UE_LOG(LogTemp, Log, TEXT("You Die"));
+
+	FollowCamera->PostProcessSettings.AddBlendable(M_Grayscale, 1.0f);
+	FollowCamera->PostProcessBlendWeight = 1.0f;
+
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
+
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	FTimerHandle RespawnTimeHandle;
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimeHandle, this, &APlayerCharacter::Respawn, 3.0f, false);
+}
+
+void APlayerCharacter::SpawnFromHellpod()
+{
+	ALevelSequenceActor* OutActor;
+
+	FMovieSceneSequencePlaybackSettings PlaybackSet;
+	PlaybackSet.FinishCompletionStateOverride = EMovieSceneCompletionModeOverride::ForceKeepState;
+
+	ULevelSequencePlayer* LSPlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(
+		GetWorld(),
+		LS_SpawnFromHellpod,
+		PlaybackSet,
+		OutActor
+	);
+	OutActor->SequencePlayer->Play();
+
 	PlayAnimMontage(MT_PlayerRebirth);
 
 	FOnMontageEnded OnReadyMontageEnd;
 	OnReadyMontageEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) {
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		bActiveLookAction = true;
+		CameraBoom->bDoCollisionTest = true;
+		
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		GetCharacterMovement()->GravityScale = 1.0f;
 		});
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnReadyMontageEnd);
+}
+
+void APlayerCharacter::Respawn()
+{
+	//UE_LOG(LogTemp, Log, TEXT("Respawn"));
+	Stat->SetHp(Stat->GetMaxHp());
+
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	GetMesh()->SetSimulatePhysics(false);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -93.0f), FRotator(0.0f, 90.0f, 0.0f));
+
+	FollowCamera->PostProcessSettings.RemoveBlendable(M_Grayscale);
+
+	OnRespawnPlayer.Execute(this);
 }
 
 void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
@@ -616,16 +792,18 @@ void APlayerCharacter::SetPlayerStratagem(UStratagemData* SData)
 	Stratagems.Add(SData);
 }
 
-void APlayerCharacter::EnterHellpodBridge()
+void APlayerCharacter::EnterHellpodBridge(AActor* BridgeHellpod)
 {
+	bActiveLookAction = false;
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-	FVector StartLoc = NearbyObj->GetActorLocation();
-	FVector ForwardVec = -(NearbyObj->GetActorRightVector());
+	FVector StartLoc = BridgeHellpod->GetActorLocation();
+	FVector ForwardVec = -(BridgeHellpod->GetActorRightVector());
 	StartLoc += ForwardVec * 200.0f;
 	StartLoc.Z += 95.0f;
 
-	FRotator GoalRot = NearbyObj->GetActorRotation();
+	FRotator GoalRot = BridgeHellpod->GetActorRotation();
 	GoalRot.Yaw += 90.0f;
 
 	SetActorRotation(GoalRot);
@@ -633,11 +811,27 @@ void APlayerCharacter::EnterHellpodBridge()
 
 	PlayAnimMontage(MT_PlayerReady);
 
-	FOnMontageEnded OnMontageEnd;
-	OnMontageEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) {
-		OnShowLoadOutWidget.Broadcast(true);
+	ALevelSequenceActor* OutActor;
 
-		AttachToActor(NearbyObj, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hellpod_pad_Socket"));
+	FMovieSceneSequencePlaybackSettings PlaybackSet;
+	PlaybackSet.FinishCompletionStateOverride = EMovieSceneCompletionModeOverride::ForceKeepState;
+	PlaybackSet.bPauseAtEnd = true;
+
+	ULevelSequencePlayer* LSPlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(
+		GetWorld(),
+		LS_ToStratagemSetting,
+		PlaybackSet,
+		OutActor
+	);
+	OutActor->SequencePlayer->Play();
+	OutActor->SequencePlayer->Pause();
+
+	FOnMontageEnded OnMontageEnd;
+	OnMontageEnd.BindLambda([this, BridgeHellpod, OutActor](UAnimMontage* Montage, bool bInterrupted) {
+		OnShowLoadOutWidget.Broadcast(true);
+		OutActor->SequencePlayer->Play();
+
+		AttachToActor(BridgeHellpod, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hellpod_pad_Socket"));
 
 		GetCharacterMovement()->GravityScale = 0.0f;
 		});
@@ -678,7 +872,7 @@ void APlayerCharacter::SetStratagemsNoticeWidget(UUserWidget* InStratagemNoticeW
 
 void APlayerCharacter::LoadLevel(FName InLevelName)
 {
-	UE_LOG(LogTemp, Log, TEXT("Load %s"), *InLevelName.ToString());
+	//UE_LOG(LogTemp, Log, TEXT("Load %s"), *InLevelName.ToString());
 	UGameplayStatics::OpenLevel(GetWorld(), InLevelName);
 }
 
@@ -771,7 +965,7 @@ void APlayerCharacter::LeftButtonStarted()
 		if (Stat)	Stat->OnGrenadeChanged.Broadcast(GrenadeNum);
 	}
 	else if (HandleItem->GetItemType() == EItemType::StratagemBall) {
-		HandleItem->GetSkelMeshComp()->SetNotifyRigidBodyCollision(true);
+		//HandleItem->GetSkelMeshComp()->SetNotifyRigidBodyCollision(true);
 		OnSetStratagemCoolTime.Execute(GetWorld());
 		OnSetStratagemCoolTime.Unbind();		
 
@@ -827,10 +1021,11 @@ void APlayerCharacter::LeftButtonEnd()
 					if (!bRightButton)
 						SetLookingForward(false);
 
-					HandleItem = GetWorld()->SpawnActor<AItem>(Grenade);
+					TakeOutGrenade();
+					/*HandleItem = GetWorld()->SpawnActor<AItem>(GrenadeC);
 
 					AttachToSocket(HandleItem, HandSocketName);
-					PlayAnimMontage(HandleItem->GetTakeOutMontage());
+					PlayAnimMontage(HandleItem->GetTakeOutMontage());*/
 				}
 			);
 			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(MontageEnded);
@@ -870,7 +1065,12 @@ void APlayerCharacter::LeftButtonEnd()
 	}
 	else
 	{
-		if (!bRightButton)
+		IGunInterface* GunInterface = Cast<IGunInterface>(HandleItem);
+		if (GunInterface)
+		{
+			GunInterface->StopShotSound();
+		}
+		else if (!bRightButton)
 			SetLookingForward(false);
 	}
 }
@@ -1023,29 +1223,29 @@ void APlayerCharacter::SetImpactPoint()
 		if ((HandleItem->GetItemType() == EItemType::Main || HandleItem->GetItemType() == EItemType::Pistol || HandleItem->GetItemType() == EItemType::Stratagem)
 			&& bRightButton)
 		{
-			ImpactWidget->SetHiddenInGame(false);
+			//ImpactWidget->SetHiddenInGame(false);
 
 			IGunInterface* HandleGun = Cast<IGunInterface>(HandleItem);
-			ImpactWidget->SetWorldLocation(HandleGun->GetImpactPoint());
+			//ImpactWidget->SetWorldLocation(HandleGun->GetImpactPoint());
 		}
 		else
 		{
-			ImpactWidget->SetHiddenInGame(true);
+			//ImpactWidget->SetHiddenInGame(true);
 		}
 	}
 	else
 	{
-		ImpactWidget->SetHiddenInGame(true);
+		//ImpactWidget->SetHiddenInGame(true);
 	}
 }
 
 void APlayerCharacter::Interact()
 {
-	IObjectInterface* Object = Cast<IObjectInterface>(NearbyObj);
-	if (Object)
-	{
-		Object->Interact(this);
-	}
+	//IObjectInterface* Object = Cast<IObjectInterface>(NearbyObj);
+	//if (Object)
+	//{
+	//	Object->Interact(this);
+	//}
 }
 
 void APlayerCharacter::TakeStratagemBall(const FInputActionValue& Value)
@@ -1063,7 +1263,9 @@ void APlayerCharacter::TakeStratagemBall(const FInputActionValue& Value)
 			Stratagems[i]->SetbActive(true);
 		}
 
-		AItem* StratagemBall = GetWorld()->SpawnActor<AItem>(StratagemBallClass);
+		FActorSpawnParameters SpawnParam;
+		SpawnParam.Owner = this;
+		AItem* StratagemBall = GetWorld()->SpawnActor<AItem>(StratagemBallC, SpawnParam);
 
 		if (HandleItem)
 		{
@@ -1153,9 +1355,9 @@ void APlayerCharacter::TakeStratagemBall(const FInputActionValue& Value)
 	}
 }
 
-void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
+void APlayerCharacter::InputMacro(const FInputActionValue& Value)
 {
-	if (bSucceededStratagem || !bActivatedStratagemBall)
+	if (bSucceededStratagem || !bActivatedStratagemBall || !bActivatedConsole)
 		return;
 
 	PlayAnimMontage(MT_StratagemInput);
@@ -1163,70 +1365,10 @@ void APlayerCharacter::InputStratagemBall(const FInputActionValue& Value)
 
 	const uint8 InputMacro = Value.Get<float>();
 
-	bool bAllInactive = true;
+	if (bActivatedStratagemBall)
+		StratagemInput(InputMacro);
+	else if(bActivatedConsole)
 
-	for (auto Stratagem : Stratagems)
-	{
-		if (!Stratagem->IsActive() || MacroIndex >= Stratagem->Macro.Num()) 
-		{
-			if (Stratagem->IsActive())
-				Stratagem->SetbActive(false);
-			continue;
-		}
-		else if (Stratagem->bCoolTime)
-		{
-
-		}
-		else 
-		{
-			const uint8 MacroKey = Stratagem->Macro[MacroIndex];
-			if (MacroKey == InputMacro) 
-			{
-				bAllInactive = false;
-
-				const uint8 MacroN = Stratagem->Macro.Num();
-				if (MacroIndex == MacroN - 1)	//입력한 키가 마지막 매크로일 경우
-				{
-					Stratagem->CorrectMacro(MacroIndex);
-
-					bSucceededStratagem = true;
-								
-					UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoopEnter, GetActorLocation());
-								
-					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-					SetLookingForward(false);
-								
-					OnSetStratagemCoolTime.BindUObject(Stratagem, &UStratagemData::SetCoolTime);
-					Stratagem->OnHideMacroBox.Execute(true);
-
-					Cast<AStratagemBall>(HandleItem)->SetStratagem(Stratagem->GetCStratagem(), (uint8)Stratagem->GetStratagemType());
-
-					for (int i = 0; i < Stratagems.Num(); i++)
-					{
-						if (Stratagems[i] != Stratagem)
-							Stratagems[i]->ShowConditionWidgetDelegate.Execute(false);
-					}
-								
-					return;
-				}
-				else //옳은 키를 입력했을 때
-				{
-					Stratagem->CorrectMacro(MacroIndex);
-				}
-			}
-			else Stratagem->SetbActive(false);
-		}
-	}
-
-	if(!bAllInactive)
-		MacroIndex++;
-	else
-	{
-		MacroIndex = 0;
-
-		for (auto Stratagem : Stratagems)
-			if(!Stratagem->bCoolTime) Stratagem->SetbActive(true);
-	}
 
 	//for (int i = 0; i < ActivatedMacros.Num(); ) 
 	//{
@@ -1358,6 +1500,7 @@ void APlayerCharacter::SetLookingForward(bool bLookForward)
 
 void APlayerCharacter::SetCameraData(const UCameraData* CameraData)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SetCameraData"));
 	CameraBoom->TargetArmLength = CameraData->TargetArmLength;
 	CameraBoom->SocketOffset = CameraData->SocketOffset;
 
@@ -1365,18 +1508,27 @@ void APlayerCharacter::SetCameraData(const UCameraData* CameraData)
 	FollowCamera->SetRelativeRotation(CameraData->Rot);
 }
 
-void APlayerCharacter::TakeItem(const FInputActionValue& Value)
+void APlayerCharacter::InteractItem(const FInputActionValue& Value)
 {
-	if (!GroundedItems.IsEmpty())
+	if (!OverlappedObj.IsEmpty())
 	{
-		PlayAnimMontage(MT_GetItem);
-
-		AItem* Item = Cast<AItem>(GroundedItems.Pop());
-		if (Item)
+		AInteractObj* Obj = OverlappedObj.Pop();
+		if (AItem* Item = Cast<AItem>(Obj))
 		{
-			FTakeItemDelegateWrapper OnItemAction = TakeItemActions[(uint8)Item->GetItemType()];
-			if(OnItemAction.ItemDelegate.IsBound()) OnItemAction.ItemDelegate.ExecuteIfBound(Item);
+			FTakeItemDelegateWrapper* OnItemAction = TakeItemActions.Find(Item->GetItemType());
+			if (Item && OnItemAction)
+			{
+				PlayAnimMontage(MT_GetItem);
+
+				if (OnItemAction->ItemDelegate.IsBound()) OnItemAction->ItemDelegate.ExecuteIfBound(Item);
+			}
 		}
+		else if (IObjectInterface* Object = Cast<IObjectInterface>(Obj))
+		{
+			Object->Interact(this);
+		}
+
+		Obj->SetActiveOverlapEvent(false);
 	}
 }
 
@@ -1437,14 +1589,14 @@ void APlayerCharacter::VaultObstacles(const FInputActionValue& Value)
 	}
 }
 
-void APlayerCharacter::Heal(const FInputActionValue& Value)
+void APlayerCharacter::UseSyringe(const FInputActionValue& Value)
 {
 	if (SyringeNum)
 	{
 		if (HandleItem)
 			HandleItem->SetActorHiddenInGame(true);
 
-		AItem* SpawnedSyringe = GetWorld()->SpawnActor<AItem>(Syringe);
+		AItem* SpawnedSyringe = GetWorld()->SpawnActor<AItem>(SyringeC);
 		AttachToSocket(SpawnedSyringe, HandSocketName);
 
 		PlayAnimMontage(MT_UseHeal);
@@ -1453,23 +1605,34 @@ void APlayerCharacter::Heal(const FInputActionValue& Value)
 			{
 				SpawnedSyringe->Destroy();
 				HandleItem->SetActorHiddenInGame(false);
-
-				Stat->SetHp(Stat->GetMaxHp());
 			});
 		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnMontageEnded);
-
-		SyringeNum--;
-
-		if (Stat)
-			Stat->OnItemChanged.Broadcast(GrenadeNum, GunsMagazineN[HandleItem->GetItemType()], SyringeNum);
 	}
 }
 
-void APlayerCharacter::EquipWeapon(AItem* Item)
+
+void APlayerCharacter::Heal()
 {
-	if (Item)
+	Stat->SetHp(Stat->GetMaxHp());
+
+	SyringeNum--;
+
+	if (Stat)
+		Stat->OnItemChanged.Broadcast(GrenadeNum, GunsMagazineN[HandleItem->GetItemType()], SyringeNum);
+}
+
+void APlayerCharacter::SetInteractConsole()
+{
+	bActivatedConsole = true;
+
+	PlayAnimMontage(MT_ToInteractConsole);
+}
+
+void APlayerCharacter::EquipWeapon(AItem* NewItem)
+{
+	if (NewItem)
 	{
-		EItemType NewItemType = Item->GetItemType();
+		EItemType NewItemType = NewItem->GetItemType();
 
 		if (Weapons.Find(NewItemType))
 		{
@@ -1477,24 +1640,23 @@ void APlayerCharacter::EquipWeapon(AItem* Item)
 			Weapons.Remove(NewItemType);
 			InventoryItem->SetOwner(nullptr);
 			InventoryItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			Item->GetSkelMeshComp()->SetSimulatePhysics(true);
 			if (HandleItem == InventoryItem)
 				HandleItem = nullptr;
 		}
 
 		if (!HandleItem)
 		{
-			HandleItem = Item;
-			AttachToSocket(Item, HandSocketName);
+			HandleItem = NewItem;
+			AttachToSocket(NewItem, HandSocketName);
 		}
 		else
 		{
-			AttachToSocket(Item, Item->GetSocketName());
+			AttachToSocket(NewItem, NewItem->GetSocketName());
 		}
 
-		Weapons.Add(NewItemType, Item);
-		Item->SetOwner(this);
-		Item->GetSkelMeshComp()->SetGenerateOverlapEvents(false);
+		Weapons.Add(NewItemType, NewItem);
+		NewItem->OnPickedUp.Execute(true);
+		NewItem->SetOwner(this);
 	}
 }
 
@@ -1522,12 +1684,15 @@ void APlayerCharacter::ChargeConsumedItem()
 	{
 		GunsMagazineN[EItemType::Stratagem] = 4;
 	}
+
+	Stat->OnItemChanged.Broadcast(GrenadeNum, GunsMagazineN[HandleItem->GetItemType()], SyringeNum);
 }
 
 void APlayerCharacter::BeginWeaponEquip()
 {
 	GunsMagazineN.Add(EItemType::Main, 4);
 	GunsMagazineN.Add(EItemType::Pistol, 4);
+	GunsMagazineN.Add(EItemType::Projectile, 4);
 	GunsMagazineN.Add(EItemType::Stratagem, 4);
 
 	SyringeNum = 4;
@@ -1545,10 +1710,32 @@ void APlayerCharacter::BeginWeaponEquip()
 		Stat->OnItemChanged.Broadcast(GrenadeNum, GunsMagazineN[HandleItem->GetItemType()], SyringeNum);
 }
 
+void APlayerCharacter::FindItem()
+{
+	FVector StartLoc = FollowCamera->GetComponentLocation();
+	FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 550.0f;
+
+	FHitResult HitResult;
+	bool bHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		StartLoc,
+		EndLoc,
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel5,
+		FCollisionShape::MakeSphere(25.0f)
+	);
+	DrawDebugCylinder(GetWorld(), StartLoc, EndLoc, 25.0f, 4, FColor::Blue, false, 0.1f);
+
+	if (bHit)
+	{
+		UE_LOG(LogTemp, Log, TEXT("%s"), *HitResult.GetActor()->GetName());
+	}
+}
+
 void APlayerCharacter::AttachToSocket(AItem* Item, FName SocketName)
 {
 	FAttachmentTransformRules AttachmentTransformRule(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-	Item->GetSkelMeshComp()->SetSimulatePhysics(false);
+	//Item->GetSkelMeshComp()->SetSimulatePhysics(false);
 	Item->AttachToComponent(GetMesh(), AttachmentTransformRule, SocketName);
 }
 

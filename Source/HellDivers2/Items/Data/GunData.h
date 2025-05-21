@@ -52,4 +52,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	float MinYaw;
+
+	UPROPERTY(EditAnywhere, Category = Sound)
+	TObjectPtr<USoundWave> SW_Shot;
 };

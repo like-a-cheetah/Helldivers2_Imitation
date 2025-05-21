@@ -21,6 +21,8 @@ ADiversPlayerController::ADiversPlayerController()
 	{
 		LoadOutWidgetClass = LoadOutWidgetRef.Class;
 	}
+
+	//CameraAnimModifier = CreateDefaultSubobject<UCameraAnimationCameraModifier>(TEXT("CameraAnimModifier"));
 }
 
 void ADiversPlayerController::BeginPlay()

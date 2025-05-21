@@ -12,7 +12,10 @@
 
 AStratagemBall::AStratagemBall()
 {
+	TiggerCollision->DestroyComponent();
+
 	SkelMeshComp->SetCollisionProfileName(TEXT("StratagemBall"));
+	SkelMeshComp->SetNotifyRigidBodyCollision(true);
 
 	NC_Laser = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NC"));
 	NC_Laser->SetRelativeLocation({ 0.0f, 0.0f, 7.f });
@@ -28,26 +31,57 @@ AStratagemBall::AStratagemBall()
 
 	static ConstructorHelpers::FObjectFinder<UAnimSequence> AS_LockupRef(TEXT("/Script/Engine.AnimSequence'/Game/PROJECTS/HELLDIVERS_2/PROPS/GAMEPLAY/Stratagem/SK_STRATAGEM_FIXED_Anim_0x36f434a85615ab80.SK_STRATAGEM_FIXED_Anim_0x36f434a85615ab80'"));
 	if (AS_LockupRef.Object) AS_Lockup = AS_LockupRef.Object;
+
+	SkelMeshComp->OnComponentHit.AddDynamic(this, &AStratagemBall::OnHit);
+	//SkelMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AStratagemBall::DFS);
 }
 
 void AStratagemBall::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (SkelMeshComp) SkelMeshComp->OnComponentHit.AddDynamic(this, &AStratagemBall::OnHit);
 }
+
+//void AStratagemBall::DFS(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+//{
+//	UE_LOG(LogTemp, Log, TEXT("Ball Overlap"));
+//
+//	if (StratagemType == (uint8)EStratagemType::NotAttack) NC_Laser->SetAsset(NS_Blue);
+//	else NC_Laser->SetAsset(NS_Red);
+//
+//	FVector HitPoint = GetActorLocation();
+//
+//	SkelMeshComp->SetSimulatePhysics(false);
+//	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, false);
+//	AttachToActor(OtherActor, AttachRules);
+//
+//	SetActorRotation({ 0.0f, 0.0f, 0.0f });
+//	SetActorLocation(HitPoint);
+//	//SetActorLocation({ Hit.ImpactPoint.X , Hit.ImpactPoint.Y, Hit.ImpactPoint.Z });
+//
+//	UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoop, GetActorLocation());
+//	SkelMeshComp->PlayAnimation(AS_Lockup, false);
+//
+//	SpawnStratagem();
+//}
 
 void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	UE_LOG(LogTemp, Log, TEXT("Hit"));
+
 	if (StratagemType == (uint8)EStratagemType::NotAttack) NC_Laser->SetAsset(NS_Blue);
 	else NC_Laser->SetAsset(NS_Red);
 
+	FVector HitPoint = GetActorLocation();
+
+	SkelMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
+	SkelMeshComp->SetNotifyRigidBodyCollision(false);
 	SkelMeshComp->SetSimulatePhysics(false);
 	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, false);
 	AttachToActor(OtherActor, AttachRules);
 
 	SetActorRotation({ 0.0f, 0.0f, 0.0f });
-	SetActorLocation({ Hit.ImpactPoint.X , Hit.ImpactPoint.Y, Hit.ImpactPoint.Z });
+	SetActorLocation(HitPoint);
+	//SetActorLocation({ Hit.ImpactPoint.X , Hit.ImpactPoint.Y, Hit.ImpactPoint.Z });
 
 	UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoop, GetActorLocation());
 	SkelMeshComp->PlayAnimation(AS_Lockup, false);
@@ -61,8 +95,7 @@ void AStratagemBall::SpawnStratagem()
 	if (StratagemClass->IsChildOf(AHellpod::StaticClass())) SpawnLoc.Z += 20000.0f;
 	FRotator SpawnRot = FRotator::ZeroRotator;
 
-	AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, SpawnRot);
-
+	AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, AbsoluteForwardVector);
 
 	Stratagem->OnDestoryBall.BindLambda([this]() {
 		Destroy();

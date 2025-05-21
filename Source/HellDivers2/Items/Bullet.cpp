@@ -7,6 +7,10 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Characters/Monsters/Enemy.h"
+#include "Characters/Components/CharacterStatComponent.h"
 
 // Sets default values
 ABullet::ABullet()
@@ -19,6 +23,7 @@ ABullet::ABullet()
 	MeshComp->SetEnableGravity(false);
 	MeshComp->SetCollisionProfileName(TEXT("Bullet"));
 	MeshComp->SetWorldRotation(FRotator(0.0f, -90.0f, 0.0f));
+	MeshComp->OnComponentHit.AddDynamic(this, &ABullet::OnBulletHit);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Script/Engine.StaticMesh'/Game/PROJECTS/HELLDIVERS_2/WEAPONS_v2/LIBERATOR/StaticMesh.StaticMesh'"));
 	if (MeshRef.Object)
 	{
@@ -27,16 +32,9 @@ ABullet::ABullet()
 
 	RootComponent = MeshComp;
 
-	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
-	SphereComp->SetupAttachment(MeshComp);
-	SphereComp->SetCollisionProfileName(TEXT("Bullet"));
-	SphereComp->SetEnableGravity(false);
-	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABullet::OnBulletBeginOverlap);
-	SphereComp->SetUseCCD(true);
-
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
-	ProjectileMovementComp->InitialSpeed = 10000.0f;
-	ProjectileMovementComp->MaxSpeed = 10000.0f;
+	ProjectileMovementComp->InitialSpeed = 20000.0f;
+	ProjectileMovementComp->MaxSpeed = 20000.0f;
 	ProjectileMovementComp->ProjectileGravityScale = 0.0f;
 	ProjectileMovementComp->Velocity = GetActorRightVector() * ProjectileMovementComp->InitialSpeed;
 
@@ -49,23 +47,50 @@ ABullet::ABullet()
 	}
 	Trail->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	Trail->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Hit/P_Default2.P_Default2'"));
+	if(ParticleRef.Object) HitVFX = ParticleRef.Object;
+
+	Damage = 10.0f;
+
+	HitVFXScale = 1.0f;
+
+	SetLifeSpan(10.0f);
 }
 
-// Called when the game starts or when spawned
 void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
-void ABullet::Tick(float DeltaTime)
+void ABullet::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::Tick(DeltaTime);
+	HitPostProcess(OtherActor, OtherComp, Hit);
 
+	Destroy();
 }
 
-void ABullet::OnBulletBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,const FHitResult& SweepResult)
+void ABullet::HitPostProcess(AActor* OtherActor, UPrimitiveComponent* OtherComp, const FHitResult& Hit)
 {
+	UE_LOG(LogTemp, Log, TEXT("Hit : %s's %s' Attacked"), *OtherActor->GetName(), *OtherComp->GetName());
+
+	UCharacterStatComponent* EnemyStat = OtherActor->FindComponentByClass<UCharacterStatComponent>();
+	if (EnemyStat)
+	{
+		EnemyStat->ApplyDamage(Damage);
+		OnHitEnemy.Execute();
+
+		if(GetOwner()) UGameplayStatics::ApplyDamage(OtherActor, Damage, nullptr, GetOwner(), UDamageType::StaticClass());
+	}
+
+	FTransform ImpactTransform;
+	ImpactTransform.SetLocation(Hit.ImpactPoint);
+	FRotator fds = GetActorRotation();
+	fds.Roll -= 90.0f;
+	ImpactTransform.SetRotation(fds.Quaternion());
+	ImpactTransform.SetScale3D(FVector(HitVFXScale, HitVFXScale, HitVFXScale));
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitVFX, ImpactTransform);
 }
 	
 

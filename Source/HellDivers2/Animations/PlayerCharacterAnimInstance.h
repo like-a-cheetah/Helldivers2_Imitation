@@ -86,6 +86,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stratagem)
 	uint8 bPullingPin : 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	FTransform Tr_LFootGoal;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	FTransform Tr_RFootGoal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	float LFootGoalZ;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	float RFootGoalZ;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	FRotator LFootGoalRot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
+	FRotator RFootGoalRot;
+
 	class IPlayerAnimInterface* PlayerAnimInterface;
 
 private:
@@ -93,6 +108,8 @@ private:
 	FTransform RecoilTransform;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Recoil, Meta = (AllowPrivateAccess = "true"))
 	FTransform Recoil;
+
+	void CalculateFootGoalTransform(float DeltaTime);
 
 public:
 	UFUNCTION()

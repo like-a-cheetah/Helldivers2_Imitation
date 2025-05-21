@@ -16,3 +16,19 @@ DuplicateObject로 깊은 복사
 위젯에서 UUserWidget이 아닌 그냥 버튼같은거 만들 때는 WidgetTree::ConstructWidget 사용
 
 Constraint 작업
+
+BTService FBlackboardKeySelector 오류
+
+BTT_MoveTo_Sequence 클래스
+태스크 노드 bCreateNodeInstance = true로 설정 
+UnregisterObserver
+
+Turret_MeshComp1->RefreshBoneTransforms();로 위치 바로 계산
+
+FireSubsystem
+
+총알 충돌 구현방식
+
+로켓 NewObjet<스피어컴포넌트> 
+SplashCollision->RegisterComponent();
+SplashCollision->UpdateOverlaps();

@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CharacterStatComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HELLDIVERS2_API UCharacterStatComponent : public UActorComponent
@@ -17,20 +18,15 @@ public:
 	UCharacterStatComponent();
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(VisibleAnywhere, Category = Stat)
 	float MaxHp;
 
 	UPROPERTY(VisibleAnywhere, Category = Stat)
 	float Hp;
 
-	uint8 bPlayerDead : 1;
-
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void SetMaxHp(float NewMaxHP);
-	void SetHp(float NewHp);
+	virtual void SetHp(float NewHp);
 
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	FORCEINLINE float GetMaxHp() { return MaxHp; }
@@ -40,4 +36,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	virtual float ApplyDamage(float InDamage);
+
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnHpZeroDelegate OnHpZero;
 };

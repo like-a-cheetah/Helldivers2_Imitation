@@ -21,6 +21,10 @@ protected:
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Controller) override;
 	virtual void BeginPlay() override;
 
+	void ResetSpawnPoint(AActor* Actor);
+
+	void SpawnPlayerHellpod(class APlayerCharacter* PlayerChar);
+
 private:
 	TSubclassOf<class AHellpod> HellPodPlayer_C;
 

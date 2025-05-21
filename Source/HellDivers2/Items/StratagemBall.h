@@ -21,6 +21,11 @@ public:
 
 public:
 	FORCEINLINE void SetStratagem(TSubclassOf<AActor> InStratagemClass, uint8 InStratagemType) { StratagemClass = InStratagemClass; StratagemType = InStratagemType; }
+	FORCEINLINE void SetAbsoluteForwardVector(FRotator InAbsoluteForwardVector) { AbsoluteForwardVector = InAbsoluteForwardVector; }
+
+
+	//UFUNCTION()
+	//void DFS(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
 private:
 	UFUNCTION()
@@ -45,4 +50,6 @@ private:
 	void SpawnStratagem();
 
 	uint8 StratagemType;
+
+	FRotator AbsoluteForwardVector;
 };

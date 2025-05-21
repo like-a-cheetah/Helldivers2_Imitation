@@ -12,6 +12,6 @@ void UAN_Summoned::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* A
 	IPlayerControl* Player = Cast<IPlayerControl>(MeshComp->GetOwner());
 	if (Player)
 	{
-		Player->Summoned();
+		//Player->Summoned();
 	}
 }

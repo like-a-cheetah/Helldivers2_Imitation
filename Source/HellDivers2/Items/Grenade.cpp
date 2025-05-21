@@ -5,26 +5,18 @@
 
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
-#include "Characters/Player/PlayerCharacter.h"
+#include "Characters/Components/CharacterStatComponent.h"
 
 AGrenade::AGrenade()
 {
-	VFX = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("VFX"));
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_B.P_Explosion_Big_B'"));
 	if (ParticleRef.Object)
 	{
-		VFX->SetTemplate(ParticleRef.Object);
+		VFX = ParticleRef.Object;
 	}
-	VFX->SetSimulatePhysics(false);
-	VFX->SetupAttachment(RootComponent);
-
-	Splash = CreateDefaultSubobject<USphereComponent>(TEXT("Splash"));
-	Splash->SetCollisionProfileName(TEXT("Splash"));
-	Splash->SetEnableGravity(false);
-	Splash->SetWorldScale3D(FVector(10.0f, 10.0f, 10.0f));
-	Splash->OnComponentBeginOverlap.AddDynamic(this, &AGrenade::OnExplosionRangeBeginOverlap);
-	Splash->SetupAttachment(RootComponent);
 
 	FuseTime = 3.0f;
 }
@@ -32,35 +24,52 @@ AGrenade::AGrenade()
 void AGrenade::BeginPlay()
 {
 	Super::BeginPlay();
-
-	VFX->DeactivateSystem();
-
-	Splash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AGrenade::OnExplosionRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AGrenade::OnSplashBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Splash->SetSimulatePhysics(true);
+	UCharacterStatComponent* CharacterStat = OtherActor->FindComponentByClass<UCharacterStatComponent>();
+	if (CharacterStat)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Splash %s %s"), *OtherActor->GetName(), *OtherComp->GetName());
 
-	FVector Force = OtherActor->GetActorLocation() - GetActorLocation();
-	Force = Force.GetSafeNormal() * 3000.0f;
+		CharacterStat->ApplyDamage(100.0f);
+
+		ACharacter* Character = Cast<ACharacter>(OtherActor);
+		if (Character)
+		{
+			FVector Force = OtherActor->GetActorLocation() - GetActorLocation();
+			Force = Force.GetSafeNormal() * 2000.0f;
+
+			Character->LaunchCharacter(Force, true, true);
+		}
+	}
 }
 
 void AGrenade::Bomb()
-{
-	VFX->Activate(true);
+{	
 
-	SkelMeshComp->SetHiddenInGame(true);
+	FTransform SplashTransform;
+	SplashTransform.SetLocation(GetActorLocation());
+	SplashTransform.SetScale3D(FVector(1.8f, 1.8f, 1.8f));
 
-	Splash->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Splash->SetSimulatePhysics(true);
+	//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), VFX, SplashTransform);
 
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-		{
-			Splash->SetSimulatePhysics(false);
-			Splash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		}, 0.1f, false);
+	//USphereComponent* Splash = NewObject<USphereComponent>(this, TEXT("Splash"));
+	USphereComponent* Splash = NewObject<USphereComponent>(UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), VFX, SplashTransform));
+
+	Splash->SetCollisionProfileName(TEXT("Splash"));
+	Splash->SetWorldLocation(GetActorLocation());
+	Splash->SetSphereRadius(500.0f);
+	Splash->OnComponentBeginOverlap.AddDynamic(this, &AGrenade::OnSplashBeginOverlap);
+
+	Splash->SetVisibility(true);
+	Splash->SetHiddenInGame(false);
+
+	Splash->RegisterComponent();
+	Splash->UpdateOverlaps();
+
+	Destroy();
 }
 
 void AGrenade::PullingPin()

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Objects/InteractObj.h"
 
 #include "Interface/ObjectInterface.h"
 
 #include "BridgeHellpod.generated.h"
 
 UCLASS()
-class HELLDIVERS2_API ABridgeHellpod : public AActor, public IObjectInterface
+class HELLDIVERS2_API ABridgeHellpod : public AInteractObj, public IObjectInterface
 {
 	GENERATED_BODY()
 	
@@ -21,8 +21,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USkeletalMeshComponent> SkelMeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UAnimSequence> AS_Idle;
@@ -33,11 +31,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UAnimMontage> MT_LockHellpod;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UBoxComponent> BoxCol;
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	//TObjectPtr<class UBoxComponent> BoxCol;
 
 protected:
 	// IObjectInterface을(를) 통해 상속됨

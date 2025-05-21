@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Items/Item.h"
 
-
-
 #include "Grenade.generated.h"
 
 /**
@@ -24,7 +22,7 @@ private:
 	void Bomb();
 	
 	UFUNCTION()
-	virtual void OnExplosionRangeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void OnSplashBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 	UFUNCTION()
@@ -34,12 +32,12 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = VFX, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UParticleSystemComponent> VFX;
+	TObjectPtr<UParticleSystem> VFX;
 
 	float FuseTime;
 
-	TArray<AActor*> overlapActors;
+	//TArray<AActor*> overlapActors;
 
-	TObjectPtr<USphereComponent> Splash;
+	/*TObjectPtr<USphereComponent> Splash;*/
 
 };

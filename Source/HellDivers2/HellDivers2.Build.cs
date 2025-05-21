@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using UnrealBuildTool.Rules;
 
 public class HellDivers2 : ModuleRules
 {
@@ -31,8 +32,10 @@ public class HellDivers2 : ModuleRules
             "Slate",
             "SlateCore",
             "LevelSequence",
-            "MovieScene"
-
+            "MovieScene",
+            "GeometryCollectionEngine",
+            "FieldSystemEngine",
+            "GamePlayCameras"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

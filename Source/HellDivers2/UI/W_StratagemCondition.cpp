@@ -78,13 +78,13 @@ void UW_StratagemCondition::SetInactiveW(bool bActive)
 {
 	if (bActive)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Blind hid"));
+		//UE_LOG(LogTemp, Log, TEXT("Blind hid"));
 		InactiveW->SetVisibility(ESlateVisibility::Hidden);
 		InitAllArrowColor();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Blind vis"));
+		//UE_LOG(LogTemp, Log, TEXT("Blind vis"));
 		InactiveW->SetVisibility(ESlateVisibility::Visible);
 	}
 }

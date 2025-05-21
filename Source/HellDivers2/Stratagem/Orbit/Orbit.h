@@ -22,8 +22,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
+	TObjectPtr<AShip> Ship;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
-	TSubclassOf<class ARocket> RocketC;
+	TArray<FName> MuzzleSocketNames;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
+	TSubclassOf<class ABullet> RocketC;
 
 	UPROPERTY();
 	FVector Goal;
@@ -50,8 +55,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
 	float Duration;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
 	uint8 bStrike : 1;
 
 	void CalculateTiming(float DeltaTime);
-	void Strike(float DeltaTime);
+	virtual void Strike(float DeltaTime);
+	virtual void SetStrikePoint();
+	virtual void SetSpawnLoc();
+	virtual void OrbitStartAction();
+	virtual void OrbitEndAction();
+
+	float ElapsedTime;
+
+	int SocketN;
+	
+	FVector SpawnLoc;
 };

@@ -9,8 +9,8 @@
 
 ABridgeHellpod::ABridgeHellpod()
 {
-	SkelMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	SetRootComponent(SkelMeshComp);
+	SkelMeshComp->SetSimulatePhysics(false);
+	SkelMeshComp->SetCollisionProfileName(TEXT("BlockAll"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/SUPER_DESTROYER/PROPS/SKELETAL_MESH/HELLPOD/SK_BRIDGE_HELLPOD.SK_BRIDGE_HELLPOD'"));
 	if (SkelMeshRef.Succeeded()) SkelMeshComp->SetSkeletalMeshAsset(SkelMeshRef.Object);
@@ -26,32 +26,35 @@ ABridgeHellpod::ABridgeHellpod()
 
 	SkelMeshComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkelMeshComp->SetAnimation(AS_Idle);
-	
-	BoxCol = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerCollider"));
-	BoxCol->SetupAttachment(RootComponent);
 
-	BoxCol->SetRelativeLocation(FVector(0.0f, 96.0f, 0.0f));
-	BoxCol->SetBoxExtent(FVector(160.0f, 32.0f, 32.0f), true);
-	BoxCol->SetCollisionProfileName(TEXT("Trigger"));
-	BoxCol->SetSimulatePhysics(false);
-	BoxCol->SetGenerateOverlapEvents(true);
-	BoxCol->OnComponentBeginOverlap.AddDynamic(this, &ABridgeHellpod::OnOverlapBegin);
+	TiggerCollision->SetRelativeLocation(FVector(0.0, -165.0, 76.0));
+	TiggerCollision->InitSphereRadius(200);  // Example values
+
+	//BoxCol = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerCollider"));
+	//BoxCol->SetupAttachment(RootComponent);
+
+	//BoxCol->SetBoxExtent(FVector(160.0f, 32.0f, 32.0f), true);
+	//BoxCol->SetCollisionProfileName(TEXT("Trigger"));
+	//BoxCol->SetSimulatePhysics(false);
+	//BoxCol->SetGenerateOverlapEvents(true);
+	//BoxCol->OnComponentBeginOverlap.AddDynamic(this, &ABridgeHellpod::OnOverlapBegin);
 }
 
 void ABridgeHellpod::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SkelMeshComp->SetAnimation(AS_Idle);
 }
 
-void ABridgeHellpod::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
-{
-	IPlayerControl* Player = Cast<IPlayerControl>(OtherActor);
-	if(Player)
-	{
-		Player->SetNearbyInteractable(this);
-	}
-}
+//void ABridgeHellpod::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+//{
+//	IPlayerControl* Player = Cast<IPlayerControl>(OtherActor);
+//	if(Player)
+//	{
+//		Player->SetNearbyInteractable(this);
+//	}
+//}
 
 void ABridgeHellpod::Interact(AActor* Actor)
 {
@@ -60,6 +63,6 @@ void ABridgeHellpod::Interact(AActor* Actor)
 	{
 		SkelMeshComp->PlayAnimation(MT_LockHellpod, false);
 
-		Player->EnterHellpodBridge();
+		Player->EnterHellpodBridge(this);
 	}
 }

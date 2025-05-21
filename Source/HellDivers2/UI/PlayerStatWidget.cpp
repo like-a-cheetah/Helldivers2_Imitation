@@ -23,11 +23,16 @@ void UPlayerStatWidget::NativeConstruct()
 	ensure(SyringeNTextBlock);
 }
 
+float UPlayerStatWidget::GetHp()
+{
+	return HpProgressBar->GetPercent();
+}
+
 void UPlayerStatWidget::SetHp(float CurrentHp)
 {
 	if (HpProgressBar)
 	{
-		HpProgressBar->SetPercent(CurrentHp / 100.0f);
+		HpProgressBar->SetPercent(CurrentHp);
 	}
 }
 

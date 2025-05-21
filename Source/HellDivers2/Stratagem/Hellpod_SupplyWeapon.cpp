@@ -31,20 +31,22 @@ void AHellpod_SupplyWeapon::SpawnSupplyItems()
 	Super::SpawnSupplyItems();
 
 	AItem* SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem, SpawnParam);
-	SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+	SpawnedItem->SetActiveOverlapEvent(true);
+	//SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
 	SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach0"));
+
 	SupplyItems.Add(SpawnedItem);
 
 	if (SubItem)
 	{
 		SpawnedItem = GetWorld()->SpawnActor<AItem>(SubItem);
-		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+		//SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
 		SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach1"));
 	}
 	else
 	{
 		SpawnedItem = GetWorld()->SpawnActor<AItem>(SupplyItem);
-		SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
+		//SpawnedItem->GetSkelMeshComp()->SetSimulatePhysics(false);
 		SpawnedItem->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("attach1"));
 	}
 	SupplyItems.Add(SpawnedItem);
