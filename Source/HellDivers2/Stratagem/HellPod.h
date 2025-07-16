@@ -43,6 +43,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StopCollider", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> BoxCollider;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UParticleSystemComponent> FireParticle;
+
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> AudioComp;
 	UPROPERTY()

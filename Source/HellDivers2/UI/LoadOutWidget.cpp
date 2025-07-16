@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UI/LoadOutWidget.h"
@@ -6,6 +6,7 @@
 #include "Animation/WidgetAnimation.h"
 #include "Animation/UMGSequencePlayer.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 #include "Helldivers2Instance.h"
 #include "Interface/CharacterHUDInterface.h"
@@ -41,7 +42,8 @@ void ULoadOutWidget::NativeConstruct()
 
 	ensure(Btn_Ready);
 	ensure(SettingAnimation);
-	ensure(StartAnimation);
+	ensure(SpreadAnimation);
+	ensure(FoldAnimation);
 
 	BtnImgs.Add(Btn_Img1);
 	BtnImgs.Add(Btn_Img2);
@@ -56,31 +58,85 @@ void ULoadOutWidget::NativeConstruct()
 	if (Btn_StratagemSet3) Btn_StratagemSet3->OnPressed.AddDynamic(this, &ULoadOutWidget::BtnFunc);
 	if (Btn_StratagemSet4) Btn_StratagemSet4->OnPressed.AddDynamic(this, &ULoadOutWidget::BtnFunc);
 
-	if (Btn_Ready) Btn_Ready->OnClicked.AddDynamic(this, &ULoadOutWidget::GameStart);
+	if (Btn_Ready) Btn_Ready->OnClicked.AddDynamic(this, &ULoadOutWidget::OnGameStart);
 
 	ICharacterHUDInterface* HUDPawn = Cast<ICharacterHUDInterface>(GetOwningPlayerPawn());
 	if (HUDPawn)
 	{
 		HUDPawn->SetupHUDWidget(this);
 	}
+
+	FWidgetAnimationDynamicEvent Tes;
+	Tes.BindUFunction(this, FName("SettingAnimationPlayableToggle"));
+	BindToAnimationStarted(SettingAnimation, Tes);
+
+	bSettingClosed = true;
+
+	FLinearColor ReadyBtnReadyColor = FLinearColor(0.973445f, 0.789702f, 0.035490f, 1);
+	ButtonReadyStyle = Btn_Ready->GetStyle();
+	ButtonReadyStyle.Normal.TintColor = FSlateColor(ReadyBtnReadyColor);
+	ButtonReadyStyle.Hovered.TintColor = FSlateColor(ReadyBtnReadyColor);
+	ButtonReadyStyle.Pressed.TintColor = FSlateColor(ReadyBtnReadyColor);
+
+	ReadyBtnReadyColor.A = 0;
+	ButtonInitStyle = Btn_Ready->GetStyle();
+	ButtonInitStyle.Normal.TintColor = FSlateColor(ReadyBtnReadyColor);
+	ButtonInitStyle.Hovered.TintColor = FSlateColor(ReadyBtnReadyColor);
+	ButtonInitStyle.Pressed.TintColor = FSlateColor(ReadyBtnReadyColor);
+
+	ReadyTextInitColor = FLinearColor(1.0, 0.792157f, 0.0, 1.f);
+	BlackColor = FLinearColor(0.f, 0.f, 0.f, 1.f);
+
+	BtnBackgroundColor = BtnBackground->GetColorAndOpacity();
+}
+
+void ULoadOutWidget::OnGameStart()
+{
+	bStart = !bStart;
+
+	OnClickedStartBtn.ExecuteIfBound(bStart);
+
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	if (bStart)
+	{
+		Btn_Ready->SetStyle(ButtonReadyStyle);
+
+		BtnBackgroundColor.A = 0;
+		BtnBackground->SetColorAndOpacity(BtnBackgroundColor);
+
+		Text_StartCondition->SetColorAndOpacity(BlackColor);
+		Text_StartCondition->SetText(FText::FromString(TEXT("준비 상태 전환")));
+
+		TimerManager.SetTimer(StartDelay, [this]() {
+			UUMGSequencePlayer* SequencePlayer = PlayAnimation(FoldAnimation);
+			SequencePlayer->OnSequenceFinishedPlaying().AddLambda([this](UUMGSequencePlayer& SeqPlayer) { GameStart(); });
+				}, 3.0f, false);
+	}
+	else
+	{
+		Btn_Ready->SetStyle(ButtonInitStyle);
+
+		BtnBackgroundColor.A = 0.4f;
+		BtnBackground->SetColorAndOpacity(BtnBackgroundColor);
+
+		Text_StartCondition->SetColorAndOpacity(ReadyTextInitColor);
+		Text_StartCondition->SetText(FText::FromString(TEXT("준비")));
+
+		//TimerManager.ClearTimer(StartDelay);
+	}
 }
 
 void ULoadOutWidget::GameStart()
 {
-	UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
-	if (GInst) {
+	UHelldivers2Instance* GameInst = Cast<UHelldivers2Instance>(GetGameInstance());
+	if (GameInst) {
 		for (auto Img : BtnImgs) {
 			UStratagemData* Data = Img->GetStratagemData();
-			if (Data) GInst->SetTempStratagemD(Data);
+			if (Data) GameInst->SetTempStratagemD(Data);
 		}
 	}
 
-	UUMGSequencePlayer* SequencePlayer = PlayAnimation(StartAnimation);
-	SequencePlayer->OnSequenceFinishedPlaying().AddLambda([this](UUMGSequencePlayer& SeqPlayer)
-		{
-			ICharacterHUDInterface* HUDPawn = Cast<ICharacterHUDInterface>(GetOwningPlayerPawn());
-			if (HUDPawn) HUDPawn->LoadLevel(FName(TEXT("InGameTestmap")));
-		});
+	GameInst->LoadBattleFieldLevel();
 }
 
 void ULoadOutWidget::BtnFunc()
@@ -91,6 +147,13 @@ void ULoadOutWidget::BtnFunc()
 	else if (Btn_StratagemSet4->IsPressed()) ClickedBtnN = 3;
 
 	PlayAnimation(SettingAnimation);
+
+	OnStratagemSettingStart.Execute();
+}
+
+void ULoadOutWidget::SettingAnimationPlayableToggle()
+{
+	bSettingClosed = !bSettingClosed;
 }
 
 void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
@@ -100,7 +163,7 @@ void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 	if (!NewImg) return;
 
 	if (NextSetBtnN <= 3) {
-		BtnImgs[NextSetBtnN]->SetBrushResourceObject(NewImg->Brush.GetResourceObject());
+		BtnImgs[NextSetBtnN]->SetBrushResourceObject(NewImg->GetBrush().GetResourceObject());
 		BtnImgs[NextSetBtnN]->SetStratagemData(NewImg->GetStratagemData());
 		BtnImgs[NextSetBtnN++]->SetVisibility(ESlateVisibility::Visible);
 
@@ -109,7 +172,7 @@ void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 		StratagemBtn->SetIsEnabled(false);
 	}
 	else {
-		BtnImgs[ClickedBtnN]->SetBrushResourceObject(NewImg->Brush.GetResourceObject());
+		BtnImgs[ClickedBtnN]->SetBrushResourceObject(NewImg->GetBrush().GetResourceObject());
 		BtnImgs[ClickedBtnN]->SetStratagemData(NewImg->GetStratagemData());
 
 		BroughtBtn[ClickedBtnN]->SetIsEnabled(true);
@@ -118,7 +181,10 @@ void ULoadOutWidget::SetStratagemData(class UButton* StratagemBtn)
 		StratagemBtn->SetIsEnabled(false);
 	}
 
-	if(NextSetBtnN == 4) PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
+	if (NextSetBtnN == 4)
+	{
+		ExitSettingStratagem();
+	}
 }
 
 void ULoadOutWidget::VisibleWidget(bool bShow)
@@ -126,12 +192,24 @@ void ULoadOutWidget::VisibleWidget(bool bShow)
 	if (bShow)
 	{
 		SetVisibility(ESlateVisibility::Visible);
-		PlayAnimation(StartAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse);
+		PlayAnimation(SpreadAnimation);
 	}
-	else SetVisibility(ESlateVisibility::Hidden);
+	else
+	{
+		UUMGSequencePlayer* SequencePlayer = PlayAnimation(FoldAnimation);
+		SequencePlayer->OnSequenceFinishedPlaying().AddLambda([this](UUMGSequencePlayer& SeqPlayer)
+			{
+				SetVisibility(ESlateVisibility::Hidden);
+			});
+	}
 }
 
 void ULoadOutWidget::ExitSettingStratagem()
 {
-	PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
+	if (!bSettingClosed)
+	{
+		PlayAnimation(SettingAnimation, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
+
+		OnStratagemSettingEnd.Execute();
+	}
 }

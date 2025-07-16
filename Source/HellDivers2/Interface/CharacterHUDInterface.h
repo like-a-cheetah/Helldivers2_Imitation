@@ -22,7 +22,7 @@ class HELLDIVERS2_API ICharacterHUDInterface
 
 public:
 	virtual void SetupHUDWidget(class UUserWidget* InHUDWidget) = 0;
-	virtual void LoadLevel(FName InLevelName) = 0;
+	virtual void LoadBattleFieldLevel() = 0;
 	virtual void SetStratagemsNoticeWidget(UUserWidget* InStratagemNoticeWidget) = 0;
 	virtual void SetStratagemConditionWidget(UUserWidget* InStratagemNoticeWidget) = 0;
 };

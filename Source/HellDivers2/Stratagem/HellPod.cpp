@@ -9,12 +9,12 @@
 #include "Components/InputComponent.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 
 AHellpod::AHellpod() 
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	SetRootComponent(HellpodMesh);
 
 	HellpodMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HellpodMesh"));
 	HellpodMesh->SetCollisionProfileName(TEXT("Hellpod"));
@@ -24,10 +24,21 @@ AHellpod::AHellpod()
 	HellpodMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	HellpodMesh->SetAllMassScale(10.0f);
 
+	SetRootComponent(HellpodMesh);
+
 	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollider"));
 	BoxCollider->SetupAttachment(HellpodMesh);
 	BoxCollider->SetCollisionProfileName(TEXT("OverlapOnlyStatic"));
 	BoxCollider->OnComponentBeginOverlap.AddDynamic(this, &AHellpod::OnBoxOverlapBegin);
+
+	FireParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("FireParticle"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> FireRef(TEXT("/Script/Engine.ParticleSystem'/Game/PROJECTS/HELLDIVERS_2/VFX_PROJECT/RoboRecall/P_RocketTrail/Particles/P_Trail_Rocket_SIMPLE_ALT_HD3.P_Trail_Rocket_SIMPLE_ALT_HD3'"));
+	if (FireRef.Succeeded()) FireParticle->SetTemplate(FireRef.Object);
+	FireParticle->SetupAttachment(RootComponent);
+	FireParticle->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	FireParticle->SetRelativeLocation(FVector(0, 0, -468.333591f));
+	FireParticle->SetRelativeRotation(FRotator(90, 0, 0));
+	FireParticle->SetRelativeScale3D(FVector(9, 16, 16));
 
 	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComp->SetupAttachment(RootComponent);
@@ -81,18 +92,15 @@ void AHellpod::Tick(float DeltaTime)
 
 void AHellpod::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	//UE_LOG(LogTemp, Log, TEXT("%s Damaged"), *OtherActor->GetName());
 }
 
 void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	//UE_LOG(LogTemp, Log, TEXT("%s Arrive"), *OtherActor->GetName());
+	if (OtherActor == this) return;
 
 	BoxCollider->SetGenerateOverlapEvents(false);
 
 	if (OnDestoryBall.IsBound()) OnDestoryBall.Execute();
-
-	//AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
 
 	HellpodMesh->SetSimulatePhysics(false);
 	HellpodMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -104,7 +112,6 @@ void AHellpod::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	HellpodMesh->SetAllBodiesPhysicsBlendWeight(0.0f);
 
 	FVector DropPoint = GetActorLocation();
-	//DropPoint.Z = SweepHitResult.ImpactPoint.Z + 100.0;
 
 	SetActorLocation(DropPoint);
 
@@ -130,7 +137,7 @@ void AHellpod::CheckToLanding()
 	FVector StartPos = GetActorLocation();
 	StartPos.Z -= 500.0f;
 	FVector EndPos = StartPos;
-	EndPos.Z -= 6000.0f;
+	EndPos.Z -= 13000.0f;
 	float Radius = 50.0f;
 	FHitResult OutHit;
 
@@ -143,7 +150,7 @@ void AHellpod::CheckToLanding()
 		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel7),
 		false,
 		Temp,
-		EDrawDebugTrace::ForOneFrame,
+		EDrawDebugTrace::None,
 		OutHit,
 		true
 	);
@@ -152,7 +159,9 @@ void AHellpod::CheckToLanding()
 		bDecisionLandingPoint = true;
 
 		HellpodMesh->PlayAnimation(MT_ReadyToRanding, false);
-		HellpodMesh->SetLinearDamping(1.8f);
+		HellpodMesh->SetLinearDamping(1.f);
+
+		FireParticle->SetActive(false);
 	}
 }
 

@@ -22,9 +22,9 @@ private:
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	void CalculateDistToTarget(UBehaviorTreeComponent& OwnerComp);
+	//void CalculateDistToTarget(UBehaviorTreeComponent& OwnerComp);
 
-	void FindPath();
+	bool FindPath();
 
 private:
 	TObjectPtr<class UBlackboardComponent> Blackboard;
@@ -32,6 +32,8 @@ private:
 
 	class IAnimMovementInterface* EnemyMovement;
 	TObjectPtr<APawn> ControlledPawn;
+
+	TObjectPtr<AActor> TargetPlayer;
 
 	FNavAgentProperties AgentProps;
 	TObjectPtr<class UNavigationSystemV1> NavSys;
@@ -41,11 +43,14 @@ private:
 
 	float TimeSinceLastUpdate = 0.0f;
 
-	float AttackRadius;
-
 	FDelegateHandle BBObserverHandle;
 
 	uint8 bFollowPath : 1;
+
+	TObjectPtr<UBehaviorTreeComponent> BehaviorComp;
+
+	FVector PreLocation;
+	float BlockedTime;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)

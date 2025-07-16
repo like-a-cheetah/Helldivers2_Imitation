@@ -17,6 +17,9 @@ class HELLDIVERS2_API UAnimInst_Enemy : public UAnimInstance
 {
 	GENERATED_BODY()
 
+public:
+	UAnimInst_Enemy();
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
@@ -42,6 +45,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "IK")
 	float LegRadius;
+
+	UPROPERTY(BlueprintReadWrite, Category = "IK")
+	float KneeZ;
 
 	UPROPERTY(BlueprintReadWrite, Category = "IK")
 	FName FRLegName;

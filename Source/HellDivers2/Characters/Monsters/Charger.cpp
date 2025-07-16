@@ -3,6 +3,9 @@
 
 #include "Characters/Monsters/Charger.h"
 
+#include "PaperSpriteComponent.h"
+
+#include "Characters/Player/PlayerCharacter.h"
 #include "Characters/Components/AIC_Charger.h"
 
 ACharger::ACharger()
@@ -29,13 +32,25 @@ ACharger::ACharger()
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/HellDivers2/Characters/Enemys/Charger/ABP_Charger.ABP_Charger_C"));
 	if (AnimInstanceClassRef.Succeeded())	GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 
+	BodySlamCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodySlamCollider"));
+	BodySlamCollider->SetupAttachment(GetMesh(), TEXT("head1"));
+	BodySlamCollider->OnComponentBeginOverlap.AddDynamic(this, &ACharger::OnOverlapBodySlam);
+
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_DieRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Enemys/Charger/EditedAnimation/MT_Die.MT_Die'"));
 	if (MT_DieRef.Object) MT_Die = MT_DieRef.Object;
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> MT_StartRushRef(TEXT("/Script/Engine.AnimMontage'/Game/HellDivers2/Characters/Enemys/Charger/EditedAnimation/MT_StartRush.MT_StartRush'"));
 	if (MT_StartRushRef.Object) MT_StartRush = MT_StartRushRef.Object;
 
-	Stat->SetMaxHp(300.0f);
+	PaperSpriteComp->SetWorldScale3D(FVector(1.5f, 1.0f, 1.5f));
+}
+
+void ACharger::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Stat->SetMaxHp(1200.0f);
+
 }
 
 void ACharger::Tick(float DeltaTime)
@@ -47,15 +62,31 @@ void ACharger::OnOverlapAttackBone(UPrimitiveComponent* OverlappedComponent, AAc
 {
 	Super::OnOverlapAttackBone(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	ACharacter* OtherChar = Cast<ACharacter>(OtherActor);
-	if (!OtherChar) return;
-	if (!OtherChar->ActorHasTag("Player")) return;
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor))
+	{
+		FVector Direct = OtherActor->GetActorLocation() - GetActorLocation();
+		Direct.Normalize();
+		Direct.Z = 1.f;
+		Direct *= 200.f;
 
-	FVector Dir = OtherChar->GetActorLocation() - GetActorLocation();
-	Dir *= 3.5f;
-	Dir.Z = 800.0f;
+		Player->LaunchCharacter(Direct, false, false);
+	}
+}
 
-	OtherChar->LaunchCharacter(Dir, true, true);
+void ACharger::OnOverlapBodySlam(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Super::OnOverlapAttackBone(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor))
+	{
+		FVector Dir = Player->GetActorLocation() - GetActorLocation();
+		Dir.Normalize();
+		Dir *= 500.f;
+		Dir.Z = 800.0f;
+
+		Player->LaunchCharacter(Dir, false, false);
+		Player->Stun(5.0f);
+	}
 }
 
 void ACharger::Rush()

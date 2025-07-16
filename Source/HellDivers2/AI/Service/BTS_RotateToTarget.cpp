@@ -10,6 +10,7 @@
 
 #include "Characters/Monsters/Enemy.h"
 #include "Characters/Components/EnemyKey.h"
+#include "Characters/Components/AIController_Enemy.h"
 
 void UBTS_RotateToTarget::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -39,6 +40,14 @@ void UBTS_RotateToTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		return;
 	}
 
+	//if (Blackboard->GetValueAsBool(BBKEY_CLIMB))
+	//{
+	//	AEnemy* Enemy = Cast<AEnemy>(ControlledPawn);
+	//	Enemy->SetRotate(0.0f);
+	//	Blackboard->SetValueAsFloat(BBKEY_ROTATE_TARGET, 0.0f);
+	//	return;
+	//}
+
 	if (Target.IsSet())
 	{
 		FVector GoalPos;
@@ -67,8 +76,11 @@ void UBTS_RotateToTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		float Angle = FMath::RadiansToDegrees(acosf(Dot));
 		FVector Cross = FVector::CrossProduct(ForwardVector, Direction);
 
+		
+		AAIController_Enemy* AICon = Cast<AAIController_Enemy>(OwnerComp.GetAIOwner());
+
 		float RelativeAngle = Cross.Z < 0 ? -Angle : Angle;
-		if (RelativeAngle < MaxRelativeAngle && RelativeAngle > -MaxRelativeAngle)
+		if (abs(RelativeAngle) < MaxRelativeAngle && AICon->IsSmoothRotate())
 		{
 			FRotator CurrentRotation = ControlledPawn->GetActorRotation();
 			FRotator TargetRotation = Direction.Rotation();
@@ -79,6 +91,10 @@ void UBTS_RotateToTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 
 		AEnemy* Enemy = Cast<AEnemy>(ControlledPawn);
 		Enemy->SetRotate(RelativeAngle);
+
 		Blackboard->SetValueAsFloat(BBKEY_ROTATE_TARGET, RelativeAngle);
+
+		bool bMeleeAttackRange = RelativeAngle <= 45.0f && RelativeAngle >= -45.0f;
+		Blackboard->SetValueAsBool(BBKEY_MELEE_ATTACK_RANGE, bMeleeAttackRange);
 	}
 }

@@ -33,6 +33,11 @@ struct FTakeItemDelegateWrapper
 	FOnTakeItemDelegate ItemDelegate;
 };
 
+DECLARE_DELEGATE_OneParam(FOnCrosshairActive, bool /*bActive*/);
+
+DECLARE_DELEGATE_OneParam(FOnRoundChange, float /*RoundRatio*/);
+DECLARE_DELEGATE_OneParam(FOnHealActive, bool /*bHealing*/);
+
 DECLARE_DELEGATE_OneParam(FOnActiveStratagemDelegate, bool /*bActive*/);
 DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
 //DECLARE_DELEGATE_OneParam(FOnStratagemSet, TArray<class UStratagemData*> /*Stratagems*/);
@@ -41,7 +46,15 @@ DECLARE_DELEGATE(FOnCloseStratagemSettingWidget);
 //DECLARE_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnShowLoadOutWidget, bool /*bShow*/);
 DECLARE_DELEGATE_OneParam(FOnSetStratagemCoolTime, UWorld*);
+DECLARE_DELEGATE_OneParam(FOnExpansionMinimap, bool);
+
 DECLARE_DELEGATE_OneParam(FOnRespawnPlayer, APlayerCharacter*);
+
+DECLARE_DELEGATE_OneParam(FOnPlayStartGameSequencer, bool /*bPlayReverse*/);
+
+DECLARE_DELEGATE(FOnEscapeCurrentSequence);
+
+DECLARE_DELEGATE(FOnStratagemSettingClosed);
 
 UCLASS()
 class HELLDIVERS2_API APlayerCharacter : public ACharacter, public IPlayerAnimInterface, public IPlayerControl, public ICharacterHUDInterface, public IStratagemInterface
@@ -58,6 +71,8 @@ protected:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool bZOverride) override;
 
 protected:
 	UFUNCTION()
@@ -80,6 +95,24 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	TObjectPtr<class ULevelSequence> LS_ToStratagemSetting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	TObjectPtr<class ULevelSequence> LS_ToSelectEarth;
+
+	UFUNCTION(BlueprintCallable)
+	void SelectLandPointSequence(ULevelSequencePlayer* Player, bool& bSetLandPoint);
+
+	UFUNCTION(BlueprintCallable)
+	void SelectStratagemSequence(ULevelSequencePlayer* SeqPlayer, bool& bSetLandPoint);
+
+	TObjectPtr<class UUserWidget> LastHoveredWidget;
+
+	FOnEscapeCurrentSequence OnEscapeCurrentSequence;
+	FOnPlayStartGameSequencer OnPlayStartGameSequencer;
+
+	FOnStratagemSettingClosed OnStratagemSettingClosed;
+
+	uint8 bdWidgetInteractCompHover : 1;
 
 // IA 관련
 private:
@@ -123,9 +156,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> IA_Escape;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> IA_Interact;
+	TObjectPtr<class UInputAction> IA_InteractObj;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> IA_MinimapExpansion;
 
 protected:
+	void MoveStart();
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -140,11 +176,18 @@ protected:
 	void Zoom(const FInputActionValue& Value);
 	void ChangeWeaponAction(const FInputActionValue& Value);
 	void InteractItem(const FInputActionValue& Value);
-	void Reload();
+	void TryReload();
 	void TakeStratagemBall(const FInputActionValue& Value);
 	void InputMacro(const FInputActionValue& Value);
 
 	void Esc();
+	void ExpansionMinimap(const FInputActionValue& Value);
+
+private:
+	uint8 bDive : 1;
+
+public:
+	void DivingLaunch();
 
 // 몽타주 관련
 private:
@@ -178,7 +221,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TObjectPtr<UAnimMontage> MT_PlayerReady;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	TObjectPtr<UAnimMontage> MT_ToInteractConsole;
+	TObjectPtr<UAnimMontage> MT_Start;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_CancelStart;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_PlayerCancelReady;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_InputConsole;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_SitPelican;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_FocusOnMissionTable;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TObjectPtr<UAnimMontage> MT_FocusOutMissionTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	TArray<TObjectPtr<UAnimMontage>> MT_Divings;
@@ -202,13 +257,26 @@ protected:
 	void SetSpeedFromCondition();
 
 	UFUNCTION()
-	bool TryGetObstacleHeight(float& WallHeight);
+	bool TryGetObstacleHeight(float& WallHeight, float& AnimAdjustZ);
+
+	void FocusOnInteractObj(bool bFocus, FVector ObjLoc = FVector::ZeroVector);
+
+
+public:
+	void Stun(float StunTime);
+	void EndStun();
 
 	UFUNCTION(BlueprintCallable)
 	void SetLookingForward(bool bLookForward);
 
 protected:
+	FVector2D InputVector;
+	FVector2D LastInputVector;
+
 	uint8 bRightButton : 1;
+	uint8 bLeftButton : 1;
+	
+	uint8 bActiveRegIK : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, Meta = (AllowPrivateAccess = "true"))
 	uint8 bWalkableWall : 1;
@@ -221,6 +289,8 @@ protected:
 	FVector VaultDestinationPos;
 	float Height;
 
+	FRotator ImpactPointDirectRot;
+
 // 카메라 관련
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
@@ -229,11 +299,24 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCameraComponent> SequenceCamera;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USpringArmComponent> MinimapSceneCaptureCameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USceneCaptureComponent2D> MinimapSceneCaptureComp;
+
+	TArray<float> MinimapCaptureOrthoWidths;
+
+
 	UPROPERTY(EditAnywhere, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TMap<int32, class UCameraData*> CameraDataManager;
 
-	UPROPERTY(EditAnywhere, Category = Camera)
-	TObjectPtr<class USceneCaptureComponent2D> SceneCaptureComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	TObjectPtr<class USceneCaptureComponent2D> InHellpodSceneCaptrueComp;
 
 	uint8 bActiveLookAction : 1;
 
@@ -245,11 +328,22 @@ private:
 	void ChangeCameraMode();
 	void SetCameraData(const class UCameraData* CameraData);
 
+	void UpdateSequenceCamera();
+
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> M_Grayscale;
 
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetActiveSequenceCamera(bool bActive);
+
 // 아이템 관련
+public:
+	void SuccessReload();
+
+
 private:
+	UPROPERTY()
 	TObjectPtr<class UPlayerStatComponent> Stat;
 
 	int32 SyringeNum;
@@ -261,11 +355,16 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = true))
 	TObjectPtr<AActor> NearbyObj;
 
-	uint8 bActivatedConsole : 1;
+	uint8 bActiveConsole : 1;
+	
+	UPROPERTY()
+	TObjectPtr<class AInteractObj> InteractingObj;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	TArray<class AInteractObj*> OverlappedObj;
+	TSet<class AInteractObj*> OverlappedObj;
+
+	FORCEINLINE int32 GetSyringeN() { return SyringeNum; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
@@ -287,6 +386,8 @@ protected:
 	UPROPERTY()
 	TMap<EItemType, FTakeItemDelegateWrapper> TakeItemActions;
 
+	float HealDuration;
+
 protected:
 	void BeginWeaponEquip();
 
@@ -300,7 +401,7 @@ protected:
 
 	void TakeOutGrenade();
 
-	void ThrowItem();
+	void ActiveSyringe(float DeltaTime);
 
 	UFUNCTION()
 	void AttachToSocket(AItem* Item, FName SocketName);
@@ -311,9 +412,27 @@ protected:
 	void CheckDiveLanding();
 
 	UFUNCTION(BlueprintCallable, Category = Moving)
-	void SetImpactPoint();
+	void SetImpactPoint(float DeltaTime);
+
+	UFUNCTION(BlueprintCallable, Category = Moving)
+	void CalculateMuzzleDirectionRotation();
 
 	void Interact();
+
+	void InputConsole(float InputMacro);
+
+	void InteractingGlobe(float DeltaTime);
+
+	uint8 bInteractGlobe : 1;
+
+	TObjectPtr<USceneComponent> GlobeComp;
+
+	FVector2D PreMouseLoc;
+
+	FTransform InitCameraRelativeTransform;
+
+	UFUNCTION(BlueprintCallable)
+	void DetachCamera(bool bDetach);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
@@ -329,32 +448,44 @@ public:
 	FORCEINLINE bool IsSucceededStratagem() override { return bSucceededStratagem; }
 	FORCEINLINE bool IsPullingPin() override { return bPullingPin; }
 	FORCEINLINE bool IsRightButton() override { return bRightButton; }
-
-	FVector2D rotateValue;
+	FORCEINLINE bool IsLeftButton() override { return bLeftButton; }
+	FORCEINLINE bool IsConsoleActive() override { return bActiveConsole; }
+	FORCEINLINE bool IsRegIkActive() override { return bActiveRegIK; }
+	FORCEINLINE FVector2D GetInputVector() override { return LastInputVector; }
+	FORCEINLINE FRotator GetChestRot() override { return ImpactPointDirectRot; }
 
 	// IPlayerControl을(를) 통해 상속됨
 	void GetCurrentZ() override;
 	void Summoned() override;
 	void SetNearbyInteractable(AActor* Object) override;
 	void EnterHellpodBridge(AActor* BridgeHellpod) override;
+	void LeaveHellpodBridge(AActor* BridgeHellpod) override;
 	void Heal() override;
-	void SetInteractConsole() override;
+	void SetInteractConsole(bool bInteractive, UMeshComponent* ConsoleWidget = nullptr) override;
+	void SetFocusOnMissionTable(bool bInteract, class UGlobeComponent* GlobeComponent) override;
+
+	float RidePelican(FTransform SitTr) override;
+	void VaultPostProcess() override;
+	FORCEINLINE void SetCurrentLVSequenceActor(class ALevelSequenceActor* InLVSequenceActor) override
+	{ CurrentLVSequenceActor = InLVSequenceActor; } 
 
 // 위젯 관련
-protected:
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = HUD)
-	TObjectPtr<class UHUDWidget> HUDWidget;
+public:
+	FOnRoundChange OnRoundChange;
+	FOnCrosshairActive OnCrosshairActive;
+	FOnHealActive OnHealActive;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = HUD)
-	TObjectPtr<class ULoadOutWidget> LoadOutWidget;*/
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget)
+	TObjectPtr<class UWidgetInteractionComponent> WidgetInteractComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget)
-	TObjectPtr<class UWidgetComponent> ImpactWidget;
+	TObjectPtr<class UWidgetComponent> ImpactPointWidget;
 
 	// ICharacterHUDInterface을(를) 통해 상속됨
 protected:
 	virtual void SetupHUDWidget(UUserWidget* InHUDWidget) override;
-	virtual void LoadLevel(FName InLevelName) override;
+	virtual void LoadBattleFieldLevel() override;
 	virtual void SetStratagemsNoticeWidget(UUserWidget* InStratagemNoticeWidget) override;
 	virtual void SetStratagemConditionWidget(UUserWidget* InStratagemNoticeWidget) override;
 
@@ -382,6 +513,7 @@ private:
 	//TArray<FOnShowConditionWidget> OnShowConditionDelegates;
 	//TArray<FOnSetActiveW> OnSetActiveWDelegates;
 	FOnShowLoadOutWidget OnShowLoadOutWidget;
+	FOnExpansionMinimap OnExpansionMinimap;
 
 	void SetStratagemFromGInst();
 
@@ -389,13 +521,19 @@ private:
 
 	void CalStratagemCoolTime(float DeltaTime);
 
-	void StratagemInput(uint8 InputMacro);
+	void InputStratagem(uint8 InputMacro);
 
 public:
 	UFUNCTION()
 	void Die();
 	void SpawnFromHellpod();
+
+	void PlayerInHellpodState();
+
 	void Respawn();
+
+	UFUNCTION(BlueprintCallable)
+	void ThrowItem();
 
 	// IStratagemInterface을(를) 통해 상속됨
 public:

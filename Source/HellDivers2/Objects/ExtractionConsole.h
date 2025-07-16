@@ -20,9 +20,22 @@ class HELLDIVERS2_API AExtractionConsole : public AInteractObj, public IObjectIn
 public:
 	AExtractionConsole();
 
-	void Interact(AActor* Player) override;
+	virtual void BeginPlay() override;
 
+protected:
+	void Interact_Implementation(AActor* Actor) override;
+	void Escape_Implementation(AActor* Actor) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite);
-	TArray<uint8> Macro;
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowprivateAccess = true))
+	TSubclassOf<AActor> Hellpod;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowprivateAccess = true));
+	TObjectPtr<class UMacroWidgetComponent> MacroWidgetComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn")
+	TObjectPtr<USphereComponent> SpawnPoint;
+
+	UFUNCTION()
+	void SucceessMacro();
 };

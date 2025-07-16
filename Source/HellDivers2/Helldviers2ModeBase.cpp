@@ -11,6 +11,7 @@
 #include "Characters/Player/DiversPlayerController.h"
 #include "Characters/Player/PlayerCharacter.h"
 #include "Stratagem/Hellpod_Player.h"
+#include "Helldivers2Instance.h"
 
 AHelldviers2ModeBase::AHelldviers2ModeBase()
 {
@@ -28,9 +29,12 @@ AActor* AHelldviers2ModeBase::ChoosePlayerStart_Implementation(AController* Cont
 	FString LevelName = GetLevel()->GetOuter()->GetName();
 	if (LevelName == "InGameTestmap")
 	{
+		//UHelldivers2Instance* GInst = Cast<UHelldivers2Instance>(GetGameInstance());
+		//if(GInst) PlayerStart->SetActorLocation(GInst->GetStartPoint());
+
 		ResetSpawnPoint(PlayerStart);
 	}
-	else
+	//else
 	{
 	}
 
@@ -51,7 +55,7 @@ void AHelldviers2ModeBase::BeginPlay()
 			PlayerChar->OnRespawnPlayer.BindUObject(this, &AHelldviers2ModeBase::SpawnPlayerHellpod);
 
 			////실제 게임 시뮬
-			//SpawnPlayerHellpod(PlayerChar);
+			SpawnPlayerHellpod(PlayerChar);
 			////실제 게임 시뮬
 		}
 	}
@@ -60,7 +64,7 @@ void AHelldviers2ModeBase::BeginPlay()
 void AHelldviers2ModeBase::ResetSpawnPoint(AActor* Actor)
 {
 	StartPos = Actor->GetActorLocation();
-	StartPos.Z += 10000.0f;
+	StartPos.Z += 80000.0f;
 	//PlayerStart->SetActorLocation(StartPos);
 	StartRot = Actor->GetActorRotation();
 	StartRot.Yaw += 60.0f;
@@ -68,6 +72,13 @@ void AHelldviers2ModeBase::ResetSpawnPoint(AActor* Actor)
 
 void AHelldviers2ModeBase::SpawnPlayerHellpod(APlayerCharacter* PlayerChar)
 {
+	if (!bStart) ResetSpawnPoint(PlayerChar);
+
 	AHellpod_Player* HellPod = GetWorld()->SpawnActor<AHellpod_Player>(HellPodPlayer_C, StartPos, StartRot);
+
 	HellPod->AttchPlayer(PlayerChar);
+
+	PlayerChar->PlayerInHellpodState();
+
+	bStart = false;
 }

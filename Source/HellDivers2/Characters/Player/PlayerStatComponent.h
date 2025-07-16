@@ -6,12 +6,13 @@
 #include "Components/ActorComponent.h"
 
 #include "Characters/Components/CharacterStatComponent.h"
+#include "Interface/GunInterface.h"
 
 #include "PlayerStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrenadeNChangedDelegate, int /*Grenade*/);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnItemChangedDelegate, int /*GrenadeN*/, int /*MagazineN*/, int /*SyringeN*/);
+DECLARE_DELEGATE_FourParams(FOnItemChangedDelegate, int /*GrenadeN*/, int /*MagazineN*/, int /*SyringeN*/, IGunInterface* Gun);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HELLDIVERS2_API UPlayerStatComponent : public UCharacterStatComponent

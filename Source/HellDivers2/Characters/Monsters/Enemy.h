@@ -43,14 +43,22 @@ public:
 
 	FORCEINLINE EEnemyMovementMode GetEnemyMovementMode() { return EnemyMovementMode; }
 
+	//virtual void BeginActivity(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginActivity();
+
 private:
 	uint8 bOnceBeginPlayEvent : 1;
 
 	FOnEnemyAttacked OnAttacked;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
+	FName AgentName;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 	UFUNCTION()	
 	virtual void OnOverlapAttackBone(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -59,6 +67,7 @@ protected:
 
 	//void StartBasicAttack(FOnMontageEnded OnMontageEnd);
 	
+	UPROPERTY()
 	TObjectPtr<UClass> AnimInstClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
@@ -67,21 +76,25 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Montage")
 	TObjectPtr<UAnimMontage> MT_Die;
 
-	//virtual void BeginActivity(UAnimMontage* Montage, bool bInterrupted);
-	virtual void BeginActivity();
-
 	UFUNCTION()
 	virtual void Die();
 
 	FVector BeginPatrolPos;
 
+	uint8 bRefreshAnimRot : 1;
+
 	float BodyRadius;
+	float BodyHalfHeight;
 	float AttachDamage;
 	EEnemyMovementMode EnemyMovementMode;
+
+	UPROPERTY(EditAnywhere, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPaperSpriteComponent> PaperSpriteComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Collision, Meta = (AllowPrivateAccess = "true"))
 	TMap<FName, TObjectPtr<UCapsuleComponent>> BoneCollisions;
 
+	UPROPERTY()
 	TObjectPtr<UCharacterStatComponent> Stat;
 
 	float AttackDamage;
@@ -89,6 +102,7 @@ protected:
 public:
 	// IEnemyAIInterface을(를) 통해 상속됨
 	FORCEINLINE float GetBodyRadius() override { return BodyRadius; }
+	FORCEINLINE float GetBodyHalfHeight() override { return BodyHalfHeight; }
 	FORCEINLINE float GetPatrolRadius() override { return PatrolRadius; }
 	FORCEINLINE void SetTarget(AActor* InTarget) override { Target = InTarget; }
 	FORCEINLINE AActor* GetTarget() override { return Target; }
@@ -103,6 +117,7 @@ public:
 	void SetAttack() override;
 	void MontagePlay_SetEndDelegate(UAnimMontage* Montage, FOnMontageEnded OnMontageEnd);
 	void SetRotate(float Angle) override;
+	FORCEINLINE void SetRefreshAnimRot(bool InbAnimRot) override { bRefreshAnimRot = InbAnimRot; }
 
 	FORCEINLINE void SetBeginPatrolPoint(FVector InBeginPatrolPos) { BeginPatrolPos = InBeginPatrolPos; }
 

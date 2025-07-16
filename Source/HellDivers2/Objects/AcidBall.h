@@ -14,10 +14,11 @@ class HELLDIVERS2_API AAcidBall : public AActor
 public:	
 	AAcidBall();
 
-
 private:
 	UPROPERTY(EditAnywhere, Category = Collision, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USphereComponent> SphereComp;
+	UPROPERTY(EditAnywhere, Category = Collision, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USphereComponent> SplashColliderComp;
 
 	UPROPERTY(EditAnywhere, Category = Projectile, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UProjectileMovementComponent> ProjectileMovementComp;
@@ -25,6 +26,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VFX, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UNiagaraComponent> Particle;
 
+	UPROPERTY()
+	TObjectPtr<class UParticleSystem> BoomParticle;
+
 	UFUNCTION()
 	virtual void OnAcidBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void OnSplashBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

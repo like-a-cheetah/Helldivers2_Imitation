@@ -13,3 +13,8 @@
 #define BBKEY_CURRENT_RUSH_COOLTIME TEXT("CurrentRushCool")
 #define BBKEY_RAND_ATTACK TEXT("RandAttack")
 #define BBKEY_CALLTEAM TEXT("bCallTeam")
+#define BBKEY_CLIMB TEXT("bClimb")
+#define BBKEY_CLIMBLOC TEXT("ClimbLoc")
+#define BBKEY_CLIMBROT TEXT("ClimbRot")
+#define BBKEY_SMOOTH_ROTATE TEXT("bSmootRotate")
+#define BBKEY_MELEE_ATTACK_RANGE TEXT("bMeleeAttackRange")

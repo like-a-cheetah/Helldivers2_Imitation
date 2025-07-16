@@ -29,6 +29,11 @@ public:
 	virtual EItemType GetCurrentItemType() = 0;
 	virtual EPose GetCurrentPose() = 0;
 	virtual bool IsRightButton() = 0;
+	virtual bool IsLeftButton() = 0;
 	virtual bool IsSucceededStratagem() = 0;
 	virtual bool IsPullingPin() = 0;
+	virtual bool IsConsoleActive() = 0;
+	virtual bool IsRegIkActive() = 0;
+	virtual FVector2D GetInputVector() = 0;
+	virtual FRotator GetChestRot() = 0;
 };

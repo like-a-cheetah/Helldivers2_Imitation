@@ -12,6 +12,7 @@
 /**
  * 
  */
+
 UCLASS()
 class HELLDIVERS2_API AGun : public AItem, public IGunInterface
 {
@@ -70,6 +71,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = WeaponInfo)
 	float MinYaw;
 
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> GunIcon;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> RoundIcon;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> RoundFillIcon;
+
 	uint8 bCompleteReload : 1;
 
 	UFUNCTION()
@@ -78,19 +88,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Sound)
 	TObjectPtr<USoundWave> SW_Shot;
 
+	UPROPERTY()
 	TObjectPtr<UAudioComponent> AudioComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VFX, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UParticleSystemComponent> MuzzleFlashVFX;
 
+	void AttachToPlayer(bool bPickedUp) override;
+
 protected:
 	// IGunInterface
-	void Shot() override;
+	float Shot() override;
 	void Reload() override;
 	bool IsBurst() override;
 	FVector GetImpactPoint() override;
+	FVector GetMuzzleLocation() override;
 	UAnimMontage* GetReloadMontage() override;
 	void PlayReloadMontage() override;
 	bool IsCompleteReload() override;
 	void StopShotSound() override;
+	float GetRoundRatio() override;
+	UTexture* GetGunIcon() override;
+	UTexture* GetRoundIcon() override;
+	UTexture* GetRoundFillIcon() override;
 };

@@ -23,6 +23,8 @@ AAIController_Enemy::AAIController_Enemy()
 
     //OnEnemyDetected.AddDynamic(this, &AAIController_Enemy::SetTarget);
 
+    bSmoothRotate = true;
+
     TeamID = FGenericTeamId(1);
 }
 
@@ -40,7 +42,6 @@ void AAIController_Enemy::RunAI()
 
 void AAIController_Enemy::StopAI()
 {
-    UE_LOG(LogTemp, Log, TEXT("StopAI"));
     UBehaviorTreeComponent* BTComponent = Cast<UBehaviorTreeComponent>(BrainComponent);
     if (BTComponent)
     {
@@ -85,17 +86,16 @@ void AAIController_Enemy::CallTeam()
         TraceLoc,
         FQuat::Identity,
         TEXT("Enemy"),
-        FCollisionShape::MakeSphere(2500),
+        FCollisionShape::MakeSphere(5000),
         Params
     );
-    DrawDebugSphere(GetWorld(), TraceLoc, 2500, 32, FColor::Red, false, 5.0f);
+    //DrawDebugSphere(GetWorld(), TraceLoc, 5000, 32, FColor::Red, false, 5.0f);
 
     for (auto Result : HitResults)
     {
         APawn* OtherPawn = Cast<APawn>(Result.GetActor());
         if (OtherPawn)
         {
-            UE_LOG(LogTemp, Log, TEXT("%s"), *OtherPawn->GetName());
             AAIController_Enemy* OtherAIController = OtherPawn->GetController<AAIController_Enemy>();
             if (OtherAIController)
             {

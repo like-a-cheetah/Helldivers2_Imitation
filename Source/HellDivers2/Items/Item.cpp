@@ -5,6 +5,7 @@
 
 #include "Data/ItemData.h"
 #include "Interface/PlayerControl.h"
+#include "Characters/Player/PlayerCharacter.h"
 
 AItem::AItem()
 {
@@ -19,10 +20,7 @@ AItem::AItem()
 	SkelMeshComp->SetSimulatePhysics(true);
 	TiggerCollision->SetGenerateOverlapEvents(true);
 
-	OnPickedUp.BindLambda([this](bool bPickedUp) {
-		SkelMeshComp->SetSimulatePhysics(!bPickedUp);
-		if(TiggerCollision) TiggerCollision->SetGenerateOverlapEvents(!bPickedUp);
-	});
+	OnPickedUp.BindUObject(this, &AItem::AttachToPlayer);
 }
 
 void AItem::BeginPlay()
@@ -34,7 +32,17 @@ void AItem::BeginPlay()
 		SetBaseData();
 	}
 
-	if (Owner) OnPickedUp.Execute(true);
+	if (Owner)
+	{
+		if(Cast<APlayerCharacter>(Owner)) OnPickedUp.Execute(true);
+		else
+		{
+			if (SkelMeshComp) SkelMeshComp->SetSimulatePhysics(false);
+			else if(StaticMeshComp) StaticMeshComp->SetSimulatePhysics(false);
+			if (TiggerCollision) 
+				TiggerCollision->SetGenerateOverlapEvents(true);
+		}
+	}
 	else OnPickedUp.Execute(false);
 }
 
@@ -51,6 +59,23 @@ void AItem::Throw(FVector Force)
 {
 	SkelMeshComp->SetSimulatePhysics(true);
 	SkelMeshComp->AddImpulse(Force);
+}
+
+void AItem::AttachToPlayer(bool bPickedUp)
+{
+	if (SkelMeshComp) SkelMeshComp->SetSimulatePhysics(!bPickedUp);
+	else if (StaticMeshComp) StaticMeshComp->SetSimulatePhysics(!bPickedUp);
+	if (TiggerCollision) TiggerCollision->SetGenerateOverlapEvents(!bPickedUp);
+
+	if (!bPickedUp)
+	{
+		SetOwner(nullptr);
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
+	else
+	{
+		OnDetachFromSupplyHellpod.Broadcast();
+	}
 }
 
 //void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)

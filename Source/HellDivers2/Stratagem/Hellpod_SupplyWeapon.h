@@ -17,11 +17,11 @@ class HELLDIVERS2_API AHellpod_SupplyWeapon : public AHellpod_Supply
 public:
 	AHellpod_SupplyWeapon();
 
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
 
-	// AHellpod_Supply을(를) 통해 상속됨
-	void SpawnSupplyItems() override;
+	//// AHellpod_Supply을(를) 통해 상속됨
+	//void SpawnSupplyItems() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadwrite)
-	TSubclassOf<class AItem> SubItem;
+	//UPROPERTY(EditAnywhere, BlueprintReadwrite)
+	//TSubclassOf<class AItem> SubItem;
 };

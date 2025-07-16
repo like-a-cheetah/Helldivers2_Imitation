@@ -31,26 +31,26 @@ void AOrbit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FQuat RotationQuat = FQuat(FVector(0, 1, 0), FMath::DegreesToRadians(90.0f));  
-
-	FVector CirclePos = GetActorLocation();
-	CirclePos.Z += 20.f;
-	FTransform Transform(RotationQuat, CirclePos);
-
-	FMatrix TransformMatrix = Transform.ToMatrixWithScale();
-
-	DrawDebugCircle(
-		GetWorld(),        // 월드 객체
-		TransformMatrix,   // 변환 행렬 (회전 및 위치)
-		Radius,            // 반지름
-		32,          // 세그먼트 수
-		FColor::Red,       // 색상
-		false,             // bPersistentLines
-		0.1f,              // LifeTime (0.1초 동안 유지)
-		0,                 // DepthPriority
-		20.f,              // 선 두께
-		false               // bDrawAxis
-	);
+	//FQuat RotationQuat = FQuat(FVector(0, 1, 0), FMath::DegreesToRadians(90.0f));  
+	//
+	//FVector CirclePos = GetActorLocation();
+	//CirclePos.Z += 20.f;
+	//FTransform Transform(RotationQuat, CirclePos);
+	//
+	//FMatrix TransformMatrix = Transform.ToMatrixWithScale();
+	//
+	//DrawDebugCircle(
+	//	GetWorld(),        // 월드 객체
+	//	TransformMatrix,   // 변환 행렬 (회전 및 위치)
+	//	Radius,            // 반지름
+	//	32,          // 세그먼트 수
+	//	FColor::Red,       // 색상
+	//	false,             // bPersistentLines
+	//	0.1f,              // LifeTime (0.1초 동안 유지)
+	//	0,                 // DepthPriority
+	//	20.f,              // 선 두께
+	//	false               // bDrawAxis
+	//);
 
 	if (!bStrike)
 	{
@@ -70,9 +70,7 @@ void AOrbit::CalculateTiming(float DeltaTime)
 		TimeTerm -= DeltaTime;
 
 		if (TimeTerm <= 0.0f)
-		{
 			OrbitStartAction();
-		}
 	}
 	else
 	{
@@ -129,6 +127,6 @@ void AOrbit::OrbitStartAction()
 
 void AOrbit::OrbitEndAction()
 {
-	OnDestoryBall.Execute();
+	OnDestoryBall.ExecuteIfBound();
 	Destroy();
 }

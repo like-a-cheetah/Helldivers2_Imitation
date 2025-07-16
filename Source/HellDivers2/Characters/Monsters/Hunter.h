@@ -22,4 +22,8 @@ public:
 
 	// IAcidCompInterface을(를) 통해 상속됨
 	UAcidComponent* GetAcidComp() override;
+	
+protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+	virtual void BeginActivity() override;
 };

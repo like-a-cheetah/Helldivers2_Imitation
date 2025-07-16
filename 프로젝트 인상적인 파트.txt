@@ -32,3 +32,19 @@ FireSubsystem
 로켓 NewObjet<스피어컴포넌트> 
 SplashCollision->RegisterComponent();
 SplashCollision->UpdateOverlaps();
+
+MacroWidgetComponent 설계 쓰기
+ClassGroup=(Custom), meta=(BlueprintSpawnableComponent)이거 왜 써야하는지 적기
+Interact_Implementation 원리 작성
+if (IObjectInterface* Object = Cast<IObjectInterface>(Obj))
+		{
+			IObjectInterface::Execute_Interact(Obj, this);
+
+	UFUNCTION(BlueprintCallable)
+	void Interact(TScriptInterface<class IPlayerControl> Player);
+	void Interact(class IPlayerControl* Player)
+이거 인터페이스 
+UINTERFACE(BlueprintType)
+해줘야하는거
+
+AddWeakLambda(this, [](){})

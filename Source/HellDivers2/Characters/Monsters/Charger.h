@@ -18,9 +18,13 @@ class HELLDIVERS2_API ACharger : public AEnemy
 public:
 	ACharger();
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnOverlapAttackBone(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+	UFUNCTION()
+	void OnOverlapBodySlam(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void Rush();
 	void ArmorBreak();
@@ -28,6 +32,9 @@ public:
 private:
 	UPROPERTY()
 	TObjectPtr<UAnimMontage> MT_StartRush;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UCapsuleComponent> BodySlamCollider;
 
 	uint8 bEndRush : 1;
 

@@ -22,6 +22,7 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
@@ -41,6 +42,8 @@ public:
 
 protected:	
 	virtual void OnOverlapAttackBone(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+	virtual void BeginActivity() override;
 
 public:
 	UAcidComponent* GetAcidComp() override;

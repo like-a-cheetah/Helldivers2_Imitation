@@ -12,6 +12,8 @@
 #include "Characters/Monsters/Enemy.h"
 #include "Characters/Components/CharacterStatComponent.h"
 
+FOnHitEnemy ABullet::OnHitEnemy;
+
 // Sets default values
 ABullet::ABullet()
 {
@@ -78,7 +80,7 @@ void ABullet::HitPostProcess(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	if (EnemyStat)
 	{
 		EnemyStat->ApplyDamage(Damage);
-		OnHitEnemy.Execute();
+		if(OnHitEnemy.IsBound()) OnHitEnemy.Execute();
 
 		if(GetOwner()) UGameplayStatics::ApplyDamage(OtherActor, Damage, nullptr, GetOwner(), UDamageType::StaticClass());
 	}

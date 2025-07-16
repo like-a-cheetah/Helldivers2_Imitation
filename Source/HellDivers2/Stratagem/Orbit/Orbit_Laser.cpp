@@ -30,12 +30,21 @@ AOrbit_Laser::AOrbit_Laser()
         if (SparkParticleRef.Object) PS_Spark->SetTemplate(SparkParticleRef.Object);
     }
 
+    SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("OnlyActorOverlap"));
+    SphereComp->SetupAttachment(RootComponent);
+    SphereComp->SetCollisionProfileName(TEXT("Splash"));
+
+    SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AOrbit_Laser::OnOverlapBegin);
+    SphereComp->OnComponentEndOverlap.AddDynamic(this, &AOrbit_Laser::OnOverlapEnd);
+
     MaxFireSpawnTime = 0.2f;
 }
 
 void AOrbit_Laser::BeginPlay()
 {
     Super::BeginPlay();
+
+    SphereComp->SetSphereRadius(Radius);
 
     NC_Laser->SetWorldLocation(SpawnLoc);
     NC_Laser->SetNiagaraVariableVec3(TEXT("BeamEndLocation"), SpawnLoc);
@@ -47,13 +56,11 @@ void AOrbit_Laser::Strike(float DeltaTime)
 {
     if (Duration > 0.0f)
     {
-        FVector TargetPos;
+        FVector TargetPos = GetActorLocation();
 
         if (!Target)
         {
-            TargetPos = GetActorLocation();
             SetStrikePoint();
-            if (Target) TargetPos = Target->GetActorLocation();
         }
         else
         {
@@ -63,8 +70,9 @@ void AOrbit_Laser::Strike(float DeltaTime)
                 if (EnemyStat->GetCurHp() <= 0.0f)
                     SetStrikePoint();
             }
-            TargetPos = Target->GetActorLocation();
         }
+
+        if (Target) TargetPos = Target->GetActorLocation();
 
         float DeltaMove = 1000.f * DeltaTime;
         FVector NextPos;
@@ -83,61 +91,50 @@ void AOrbit_Laser::Strike(float DeltaTime)
         }
 
         FireSpawnTime -= DeltaTime;
-        //Duration -= DeltaTime;
+        Duration -= DeltaTime;
     }
-    else Destroy();
+    else
+    {
+        OnDestoryBall.Execute();
+        Destroy();
+    }
 }
 
 void AOrbit_Laser::SetStrikePoint()
 {
-    TArray<FOverlapResult> OverlapResults;
-    FCollisionQueryParams CollisionParams;
-    CollisionParams.AddIgnoredActor(this);  
-
-    bool bHit = GetWorld()->OverlapMultiByChannel(
-        OverlapResults,
-        GetActorLocation(),
-        FQuat::Identity,
-        ECC_GameTraceChannel9,
-        FCollisionShape::MakeSphere(Radius),  
-        CollisionParams
-    );
-
     FVector StratagemLoc = GetActorLocation();
 
-    if (bHit)
+    if (OverlappedActor.Num() > 0)
     {
         AEnemy* BiggestEnemy = nullptr;
-        for (const FOverlapResult& Result : OverlapResults)
+        for (AActor* Actor : OverlappedActor)
         {
-            AEnemy* Enemy = Cast<AEnemy>(Result.GetActor());
-            if (Enemy)
+            AEnemy* Enemy = Cast<AEnemy>(Actor);
+
+            UCharacterStatComponent* Stat = Enemy->FindComponentByClass<UCharacterStatComponent>();
+            if (Stat && Stat->GetCurHp() > 0.0f)
             {
-                UCharacterStatComponent* Stat = Enemy->FindComponentByClass<UCharacterStatComponent>();
-                if (Stat && Stat->GetCurHp() > 0.0f)
+                if (BiggestEnemy)
                 {
-                    if (BiggestEnemy)
-                    {
-                        if (Enemy->GetBodyRadius() > BiggestEnemy->GetBodyRadius())
-                        {
-                            BiggestEnemy = Enemy;
-                            TempTargetDist = FVector::Distance(StratagemLoc, BiggestEnemy->GetActorLocation());
-                        }
-                        else if (Enemy->GetBodyRadius() == BiggestEnemy->GetBodyRadius())
-                        {
-                            float NewDist = FVector::Distance(StratagemLoc, Enemy->GetActorLocation());
-                            if (NewDist < TempTargetDist)
-                            {
-                                BiggestEnemy = Enemy;
-                                TempTargetDist = NewDist;
-                            }
-                        }
-                    }
-                    else
+                    if (Enemy->GetBodyRadius() > BiggestEnemy->GetBodyRadius())
                     {
                         BiggestEnemy = Enemy;
                         TempTargetDist = FVector::Distance(StratagemLoc, BiggestEnemy->GetActorLocation());
                     }
+                    else if (Enemy->GetBodyRadius() == BiggestEnemy->GetBodyRadius())
+                    {
+                        float NewDist = FVector::Distance(StratagemLoc, Enemy->GetActorLocation());
+                        if (NewDist < TempTargetDist)
+                        {
+                            BiggestEnemy = Enemy;
+                            TempTargetDist = NewDist;
+                        }
+                    }
+                }
+                else
+                {
+                    BiggestEnemy = Enemy;
+                    TempTargetDist = FVector::Distance(StratagemLoc, BiggestEnemy->GetActorLocation());
                 }
             }
         }
@@ -208,8 +205,11 @@ bool AOrbit_Laser::SetLaser()
     TArray<FHitResult> HitResults;
     FVector EndLoc = SpawnLoc + Direction * 100000.0f;
 
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+
     //bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, SpawnLoc, EndLoc, ECC_WorldStatic);
-    bool bHit = GetWorld()->LineTraceMultiByProfile(HitResults, SpawnLoc, EndLoc, TEXT("BlockStaticAndOverlapChar"));
+    bool bHit = GetWorld()->LineTraceMultiByProfile(HitResults, SpawnLoc, EndLoc, TEXT("BlockStaticAndOverlapChar"), Params);
     if (bHit)
     {
         FHitResult ClosestHit;
@@ -249,4 +249,16 @@ void AOrbit_Laser::SpreadFire(AActor* Actor)
     else SpawnedFire = GetWorld()->SpawnActor<AFire>(Fire, FireArea);
 
     if (SpawnedFire) FireSpawnTime = MaxFireSpawnTime;
+}
+
+void AOrbit_Laser::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (Cast<AEnemy>(OtherActor))
+        OverlappedActor.Add(OtherActor);
+}
+
+void AOrbit_Laser::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    if(OverlappedActor.Find(OtherActor))
+        OverlappedActor.Remove(OtherActor);
 }

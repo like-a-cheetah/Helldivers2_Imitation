@@ -73,7 +73,7 @@ void UBTT_ChargerRush::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	{
 		float TargetDist = OwnerComp.GetBlackboardComponent()->GetValueAsFloat(BBKEY_TARGET_DIST);
 		float RelativeAngle = OwnerComp.GetBlackboardComponent()->GetValueAsFloat(BBKEY_ROTATE_TARGET);
-		if (TargetDist <= 480.0f && (RelativeAngle <= 90.0f && RelativeAngle >= -90.0f))
+		if (TargetDist <= 400.0f && (abs(RelativeAngle) > 90.0f))
 		{
 			Charger->SetbEndRush(true);
 			Charger->SetbHeading(true);

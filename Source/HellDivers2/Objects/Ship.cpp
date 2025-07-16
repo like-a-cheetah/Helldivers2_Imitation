@@ -45,14 +45,14 @@ AShip::AShip()
 
 	Turret_MeshComp1 = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("SkelMeshComp5"));
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> Turret_MeshCompRef1(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/SUPER_DESTROYER/Props/SKELETAL_MESH/TURRETS_OUTSIDE/GATLING_TURRET/SKM_Ship_Gatling_Turret.SKM_Ship_Gatling_Turret'"));
-	if (Turret_MeshCompRef1.Succeeded()) Turret_MeshComp1->SetSkeletalMesh(Turret_MeshCompRef1.Object);
+	if (Turret_MeshCompRef1.Succeeded()) Turret_MeshComp1->SetSkinnedAssetAndUpdate(Turret_MeshCompRef1.Object);
 	Turret_MeshComp1->SetupAttachment(RootComponent);
 	Turret_MeshComp1->SetRelativeLocation(FVector(1042.855861, -2810.377304, 1914.374900));
 	Turret_MeshComp1->SetRelativeRotation(FRotator(0.000000, 89.999999, 0.000000));
 
 	Turret_MeshComp2 = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("SkelMeshComp6"));
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> Turret_MeshCompRef2(TEXT("/Script/Engine.SkeletalMesh'/Game/PROJECTS/HELLDIVERS_2/SUPER_DESTROYER/Props/SKELETAL_MESH/TURRETS_OUTSIDE/GATLING_TURRET/SKM_Ship_Gatling_Turret.SKM_Ship_Gatling_Turret'"));
-	if (Turret_MeshCompRef2.Succeeded()) Turret_MeshComp2->SetSkeletalMesh(Turret_MeshCompRef2.Object);
+	if (Turret_MeshCompRef2.Succeeded()) Turret_MeshComp2->SetSkinnedAssetAndUpdate(Turret_MeshCompRef2.Object);
 	Turret_MeshComp2->SetupAttachment(RootComponent);
 	Turret_MeshComp2->SetRelativeLocation(FVector(-1122.822352, -2810.377272, 1914.374900));
 	Turret_MeshComp2->SetRelativeRotation(FRotator(0.000000, -90.0, 0.000000));
@@ -62,10 +62,9 @@ void AShip::Tick(float DeltaTime)
 {	
 	Super::Tick(DeltaTime);
 
-
 	if (bRotateTurret)
 	{
-		float TurnSpeed = 90.0f; // 초당 회전 속도 (도)
+		float TurnSpeed = 150.0f; // 초당 회전 속도 (도)
 
 		FRotator TurnBoneRot;
 		FRotator YawBoneRot;

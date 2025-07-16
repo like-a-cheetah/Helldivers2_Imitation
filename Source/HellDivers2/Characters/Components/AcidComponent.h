@@ -18,6 +18,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -35,5 +36,10 @@ private:
 	float Max_AcidCoolTime;
 	float Current_AcidCoolTime;
 
+	FActorSpawnParameters SpawnParam;
+
+	FTimerHandle CoolTimer;
+
+public:
 	FOnAcidCoolTimeEnd OnAcidCoolTimeEnd;
 };

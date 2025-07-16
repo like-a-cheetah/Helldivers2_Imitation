@@ -33,8 +33,19 @@ protected:
 	//void SpreadFire();
 	void SpreadFire(AActor* Actor = nullptr);
 
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class USphereComponent> SphereComp;
+
 	TObjectPtr<class AEnemy> Target;
+
+	TArray<AActor*> OverlappedActor;
+
 	float TempTargetDist;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
@@ -42,6 +53,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UParticleSystemComponent> PS_Spark;
 
+	UPROPERTY()
 	TSubclassOf<class AFire> Fire;
 
 	float MaxFireSpawnTime;

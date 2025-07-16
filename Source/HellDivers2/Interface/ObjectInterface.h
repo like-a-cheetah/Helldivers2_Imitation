@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "ObjectInterface.generated.h"
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, Blueprintable)
 class UObjectInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -20,5 +20,9 @@ class HELLDIVERS2_API IObjectInterface
 	GENERATED_BODY()
 
 public:
-	virtual void Interact(AActor* Player) = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Interact(AActor* Actor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Escape(AActor* Actor);
 };

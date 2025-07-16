@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	ABullet();
 
-	FOnHitEnemy OnHitEnemy;
+	static FOnHitEnemy OnHitEnemy;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,7 +48,6 @@ protected:
 
 	virtual void HitPostProcess(AActor* OtherActor, UPrimitiveComponent* OtherComp, const FHitResult& Hit);
 
-private:
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = VFX, Meta = (AllowPrivateAccess = "true"))
 	float Damage;
 };

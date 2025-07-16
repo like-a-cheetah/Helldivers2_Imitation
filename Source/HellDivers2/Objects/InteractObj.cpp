@@ -54,14 +54,16 @@ void AInteractObj::BeginPlay()
 
 void AInteractObj::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	SkelMeshComp->SetOverlayMaterial(Mat_OutLiner);
-
+	if (SkelMeshComp) SkelMeshComp->SetOverlayMaterial(Mat_OutLiner);
+	else if (StaticMeshComp) StaticMeshComp->SetOverlayMaterial(Mat_OutLiner);
+	
 	InformWidget->SetHiddenInGame(false);
 }
 
 void AInteractObj::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	SkelMeshComp->SetOverlayMaterial(nullptr);
+	if (SkelMeshComp) SkelMeshComp->SetOverlayMaterial(nullptr);
+	else if (StaticMeshComp) StaticMeshComp->SetOverlayMaterial(nullptr);
 
 	InformWidget->SetHiddenInGame(true);
 }
@@ -75,7 +77,8 @@ void AInteractObj::SetActiveOverlapEvent(bool bActive)
 	}
 	else
 	{
-		SkelMeshComp->SetOverlayMaterial(nullptr);
+		if(SkelMeshComp) SkelMeshComp->SetOverlayMaterial(nullptr);
+		else if(StaticMeshComp) StaticMeshComp->SetOverlayMaterial(nullptr);
 
 		InformWidget->SetHiddenInGame(true);
 

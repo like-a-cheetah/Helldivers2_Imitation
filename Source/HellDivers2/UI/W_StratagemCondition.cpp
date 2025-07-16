@@ -8,6 +8,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
+#include "Animation/WidgetAnimation.h"
 
 #include "Interface/CharacterHUDInterface.h"
 
@@ -51,6 +52,13 @@ void UW_StratagemCondition::NativeConstruct()
 	}
 }
 
+void UW_StratagemCondition::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	StratagemAnimPlayTime += InDeltaTime;
+}
+
 void UW_StratagemCondition::SetData(UStratagemData* InData)
 {
 	Data = InData;
@@ -65,12 +73,16 @@ void UW_StratagemCondition::ShowWidget(bool bShow)
 {
 	if (bShow)
 	{
+		StratagemAnimPlayTime = 0.0f;
+
 		InactiveW->SetVisibility(ESlateVisibility::Hidden);
 		PlayAnimation(ShowAnim);
 	}
 	else
 	{
-		PlayAnimation(ShowAnim, 0.0f, 1, EUMGSequencePlayMode::Reverse, 1.0f);
+		float PlayStartTime = ShowAnim->GetEndTime() - StratagemAnimPlayTime;
+		PlayStartTime = FMath::Clamp(PlayStartTime, 0.0f, ShowAnim->GetEndTime());
+		PlayAnimation(ShowAnim, PlayStartTime, 1, EUMGSequencePlayMode::Reverse, 1.0f);
 	}
 }
 

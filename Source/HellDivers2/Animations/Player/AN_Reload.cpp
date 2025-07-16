@@ -3,15 +3,17 @@
 
 #include "Animations/Player/AN_Reload.h"
 
+#include "Characters/Player/PlayerCharacter.h"
 #include "Interface/GunInterface.h"
 
 void UAN_Reload::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	IGunInterface *ItemInterface = Cast<IGunInterface>(MeshComp->GetOwner());
-	if (ItemInterface)
+	AActor* Gun = MeshComp->GetOwner();
+	APlayerCharacter* Player = Cast<APlayerCharacter>(Gun->GetOwner());
+	if (Player)
 	{
-		ItemInterface->Reload();
+		Player->SuccessReload();
 	}
 }

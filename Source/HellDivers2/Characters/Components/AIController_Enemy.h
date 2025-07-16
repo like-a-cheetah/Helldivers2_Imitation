@@ -41,6 +41,9 @@ public:
 	virtual void SetTarget(AActor* Actor);
 	virtual void ReceiveRallyCall(AActor* InTarget);
 
+	FORCEINLINE void SetSmoothRotate(bool InbSmoothRotate) { bSmoothRotate = InbSmoothRotate; }
+	FORCEINLINE bool IsSmoothRotate() { return bSmoothRotate; }
+
 private:
 	void SetupPerceptionSystem();
 
@@ -62,6 +65,8 @@ protected:
 	FGenericTeamId TeamID;
 
 	FOnEnemyDetectedSignature OnEnemyDetected;
+
+	uint8 bSmoothRotate : 1;
 
 protected:
 	UPROPERTY()

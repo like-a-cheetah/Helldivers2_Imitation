@@ -33,7 +33,7 @@ ABugHole::ABugHole()
 	SpawnPatrolPos = CreateDefaultSubobject<USphereComponent>(TEXT("SpawnPatrolPos"));
 	SpawnPatrolPos->SetupAttachment(RootComponent);
 
-	MaxSpawnTime = 12.0f;
+	MaxSpawnTime = 15.0f;
 }
 
 void ABugHole::BeginPlay()
@@ -90,11 +90,11 @@ void ABugHole::HoleBroken()
 	GCC_Mesh->CrumbleActiveClusters();
 
 	FVector Origin = GetActorLocation();
-	float Radius = 500.f;
-	float Strength = 50000.f;
 
 	URadialVector* RadialVector = NewObject<URadialVector>();
-	RadialVector->SetRadialVector(500.f, Origin);
+	RadialVector->AddToRoot();
+
+	RadialVector->SetRadialVector(200.f, Origin);
 
 	GCC_Mesh->ApplyPhysicsField(
 		true,
@@ -102,5 +102,7 @@ void ABugHole::HoleBroken()
 		nullptr,
 		RadialVector
 	);
+
+	RadialVector->RemoveFromRoot();
 }
 

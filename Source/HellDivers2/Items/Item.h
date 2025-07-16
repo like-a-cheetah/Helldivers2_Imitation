@@ -11,6 +11,8 @@
 
 DECLARE_DELEGATE_OneParam(FOnPickedUp, bool /*bPickedUp*/);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDetachFromSupplyHellpod);
+
 UCLASS()
 class HELLDIVERS2_API AItem : public AInteractObj
 {
@@ -24,6 +26,9 @@ public:
 	virtual void SetBaseData();
 
 	FOnPickedUp OnPickedUp;
+
+	UPROPERTY(BlueprintAssignable, EditAnywhere)
+	FOnDetachFromSupplyHellpod OnDetachFromSupplyHellpod;
 
 	void Throw(FVector Force);
 
@@ -57,13 +62,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = BasicInfo)
 	TObjectPtr<UAnimMontage> TakeOutMontage;
 
+	virtual void AttachToPlayer(bool bPickedUp);
+
 public:
 	FORCEINLINE EItemType GetItemType() { return ItemType; }
 	FORCEINLINE UAnimMontage* GetInsertMontage() { return InsertMontage; }
 	FORCEINLINE UAnimMontage* GetTakeOutMontage() { return TakeOutMontage; }
 	FORCEINLINE FName GetSocketName() { return SocketName; }
-	//FORCEINLINE USkeletalMeshComponent* GetSkelMeshComp() { return SkelMeshComp; }
-	FORCEINLINE UStaticMeshComponent* GetStaticMeshComp() { return StaticMeshComp; }
 	FORCEINLINE FName GetName() { return Name; }
 	FORCEINLINE int32 GetCount() { return Count; }
 	FORCEINLINE void SetCount(int32 NewCount) { Count = NewCount; }

@@ -21,7 +21,7 @@ void UPlayerStatComponent::SetHp(float NewHp)
 {
 	Super::SetHp(NewHp);
 
-	OnHpChanged.Broadcast(NewHp);
+	OnHpChanged.Broadcast(Hp);
 }
 
 float UPlayerStatComponent::ApplyDamage(float InDamage)

@@ -16,9 +16,9 @@ public class HellDivers2 : ModuleRules
         );
 
         PublicDependencyModuleNames.AddRange(new string[] {
-            "Core",
-            "CoreUObject",
-            "Engine",
+            "Core", 
+            "CoreUObject", 
+            "Engine", 
             "InputCore",
             "EnhancedInput",
             "GameplayTags",
@@ -26,19 +26,27 @@ public class HellDivers2 : ModuleRules
             "GameplayTasks",
             "UMG",
             "Niagara",
-            "Cascade",
             "NavigationSystem",
-            "EnhancedInput",
             "Slate",
             "SlateCore",
             "LevelSequence",
             "MovieScene",
             "GeometryCollectionEngine",
             "FieldSystemEngine",
-            "GamePlayCameras"
+            "GamePlayCameras",
+            "Paper2D"
+
         });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.AddRange(new string[]
+            {
+                "UnrealEd"
+            });
+        }
+
+        PrivateDependencyModuleNames.AddRange(new string[] { });
         PrivateIncludePaths.Add(ModuleDirectory);
         PublicIncludePaths.Add(ModuleDirectory);
         // Uncomment if you are using Slate UI

@@ -8,6 +8,12 @@
 
 #include "Characters/Monsters/Enemy.h"
 
+UAnimInst_Enemy::UAnimInst_Enemy()
+{
+	LegRadius = 20.0f;
+	KneeZ = 30.0;
+}
+
 void UAnimInst_Enemy::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
@@ -30,7 +36,7 @@ void UAnimInst_Enemy::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		EnemyMovementMode = Cast<AEnemy>(Owner)->GetEnemyMovementMode();
 
-		SetLegRig(DeltaSeconds);
+		//SetLegRig(DeltaSeconds);
 	}
 }
 
@@ -50,7 +56,7 @@ void UAnimInst_Enemy::SetLegRig(float DeltaTime)
 
 
 	float GroundZ = Mesh->GetBoneLocation(TEXT("root")).Z;
-	float TraceStartZ = GroundZ + 30.0f;
+	float TraceStartZ = GroundZ + KneeZ;
 	float TraceEndZ = GroundZ - 150.0f;
 
 	FCollisionShape Shape = FCollisionShape::MakeSphere(LegRadius);

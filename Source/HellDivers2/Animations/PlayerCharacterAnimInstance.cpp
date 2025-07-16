@@ -54,13 +54,21 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		MovementYaw = CalculateMovementYaw();
 
-		ItemType = PlayerAnimInterface->GetCurrentItemType();
-		CameraType = PlayerAnimInterface->GetCurrentPose();
-		bRightButton = PlayerAnimInterface->IsRightButton();
-		SuccedStratagem = PlayerAnimInterface->IsSucceededStratagem();
-		bPullingPin = PlayerAnimInterface->IsPullingPin();
+		if (PlayerAnimInterface)
+		{
+			ItemType = PlayerAnimInterface->GetCurrentItemType();
+			CameraType = PlayerAnimInterface->GetCurrentPose();
+			bRightButton = PlayerAnimInterface->IsRightButton();
+			bLeftButton = PlayerAnimInterface->IsLeftButton();
+			SuccedStratagem = PlayerAnimInterface->IsSucceededStratagem();
+			bPullingPin = PlayerAnimInterface->IsPullingPin();
+			bActiveConsole = PlayerAnimInterface->IsConsoleActive();
+			bActiveRegIK = PlayerAnimInterface->IsConsoleActive();
+			InputVector = PlayerAnimInterface->GetInputVector();
+			ChestRot = PlayerAnimInterface->GetChestRot();
+		}
 
-		if(!Movement->IsFalling()) CalculateFootGoalTransform(DeltaSeconds);
+		if(!Movement->IsFalling() && bActiveRegIK) CalculateFootGoalTransform(DeltaSeconds);
 	}
 
 	FRotator CalRecoilRot = FMath::RInterpTo(Recoil.Rotator(), RecoilTransform.Rotator(), GetWorld()->GetDeltaSeconds(), 25.0f);

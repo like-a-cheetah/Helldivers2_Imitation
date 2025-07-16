@@ -77,13 +77,12 @@ void AFire::OnFireOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 
 void AFire::OffFire()
 {
-	UE_LOG(LogTemp, Log, TEXT("Off"));
 	PS_Fire->Deactivate();
+
+	Collider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	TSet<AActor*> CurrentOverlappingActor;
 	Collider->GetOverlappingActors(CurrentOverlappingActor);
-	Collider->OnComponentBeginOverlap.Clear();
-	Collider->OnComponentEndOverlap.Clear();
 
 	for (AActor* Actor : CurrentOverlappingActor)
 	{

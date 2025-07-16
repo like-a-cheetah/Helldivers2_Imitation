@@ -3,6 +3,8 @@
 
 #include "Characters/Monsters/BileTitan.h"
 
+#include "PaperSpriteComponent.h"
+
 #include "Characters/Components/AIC_BileTitan.h"
 #include "Characters/Components/AcidComponent.h"
 
@@ -37,6 +39,8 @@ ABileTitan::ABileTitan()
 	AttachDamage = 10.0f;
 	
 	Stat->SetMaxHp(3000.0f);
+
+	PaperSpriteComp->SetWorldScale3D(FVector(2.f, 1.0f, 2.f));
 }
 
 void ABileTitan::BeginPlay()
@@ -47,6 +51,13 @@ void ABileTitan::BeginPlay()
 void ABileTitan::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ABileTitan::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	AcidComp->DestroyComponent();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void ABileTitan::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -75,6 +86,27 @@ void ABileTitan::StartRampage(FOnMontageEnded OnMontageEnd)
 void ABileTitan::OnOverlapAttackBone(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnOverlapAttackBone(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+}
+
+void ABileTitan::BeginActivity()
+{
+	Super::BeginActivity();
+
+	AAIController* AIController = Cast<AAIController>(GetController());
+
+	if (AIController)
+	{
+		UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+		if (BlackboardComp)
+		{
+			BlackboardComp->SetValueAsBool(BBKEY_ACID_READY, true);
+
+			AcidComp->OnAcidCoolTimeEnd.BindLambda([BlackboardComp](bool bAcidReady) {
+				BlackboardComp->SetValueAsBool(BBKEY_ACID_READY, bAcidReady);
+				});
+		}
+	}
+
 }
 
 UAcidComponent* ABileTitan::GetAcidComp()

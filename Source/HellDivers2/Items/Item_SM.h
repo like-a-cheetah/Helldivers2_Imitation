@@ -17,5 +17,11 @@ class HELLDIVERS2_API AItem_SM : public AItem
 public:
 	AItem_SM();
 
+	virtual void BeginPlay() override;
+
 	virtual void SetBaseData() override;
+
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult) override;
+	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+
 };

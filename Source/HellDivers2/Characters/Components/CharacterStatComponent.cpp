@@ -9,6 +9,7 @@ UCharacterStatComponent::UCharacterStatComponent()
 void UCharacterStatComponent::SetMaxHp(float NewMaxHP)
 {
 	MaxHp = NewMaxHP;
+	Hp = MaxHp;
 }
 
 void UCharacterStatComponent::SetHp(float NewHp)
@@ -22,11 +23,12 @@ float UCharacterStatComponent::ApplyDamage(float InDamage)
 	if (Hp <= 0.0f) return -1.0f;
 
 	float PrevHp = Hp;
-	float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
+	float ActualDamage = FMath::Clamp(InDamage, 0.0f, PrevHp);
+	//float ActualDamage = 1.f;
 
 	SetHp(PrevHp - ActualDamage);	
 
-	if (Hp <= KINDA_SMALL_NUMBER)
+	if (Hp <= 0.f)
 	{
 		if (OnHpZero.IsBound())
 		{

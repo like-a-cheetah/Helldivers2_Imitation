@@ -22,6 +22,8 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	//FORCEINLINE void SetData(UStratagemData* InData) { Data = DuplicateObject<UStratagemData>(InData, this); }
 	void SetData(UStratagemData* InData);
 
@@ -63,4 +65,6 @@ private:
 	void InitAllArrowColor();
 	void SetCoolTimeText(FString Text);
 	void SetHideMacroBox(bool bHide);
+
+	float StratagemAnimPlayTime;
 };

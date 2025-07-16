@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Characters/Components/CharacterStatComponent.h"
 
@@ -31,17 +32,18 @@ void AGrenade::OnSplashBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	UCharacterStatComponent* CharacterStat = OtherActor->FindComponentByClass<UCharacterStatComponent>();
 	if (CharacterStat)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Splash %s %s"), *OtherActor->GetName(), *OtherComp->GetName());
-
 		CharacterStat->ApplyDamage(100.0f);
 
 		ACharacter* Character = Cast<ACharacter>(OtherActor);
 		if (Character)
 		{
-			FVector Force = OtherActor->GetActorLocation() - GetActorLocation();
-			Force = Force.GetSafeNormal() * 2000.0f;
+			FVector Direction = Character->GetActorLocation() - GetActorLocation();
+			Direction = Direction.GetSafeNormal();
 
-			Character->LaunchCharacter(Force, true, true);
+			const float ExplosionForce = 1000.0f;
+			FVector LaunchVelocity = Direction * (ExplosionForce);
+
+			Character->LaunchCharacter(LaunchVelocity, true, true);
 		}
 	}
 }
@@ -62,9 +64,6 @@ void AGrenade::Bomb()
 	Splash->SetWorldLocation(GetActorLocation());
 	Splash->SetSphereRadius(500.0f);
 	Splash->OnComponentBeginOverlap.AddDynamic(this, &AGrenade::OnSplashBeginOverlap);
-
-	Splash->SetVisibility(true);
-	Splash->SetHiddenInGame(false);
 
 	Splash->RegisterComponent();
 	Splash->UpdateOverlaps();

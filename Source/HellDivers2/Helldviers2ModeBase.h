@@ -26,8 +26,11 @@ protected:
 	void SpawnPlayerHellpod(class APlayerCharacter* PlayerChar);
 
 private:
+	UPROPERTY()
 	TSubclassOf<class AHellpod> HellPodPlayer_C;
 
 	FVector StartPos;
 	FRotator StartRot;
+
+	uint8 bStart : 1;
 };

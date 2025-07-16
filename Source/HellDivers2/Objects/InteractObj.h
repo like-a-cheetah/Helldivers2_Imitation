@@ -9,6 +9,14 @@
 
 #include "InteractObj.generated.h"
 
+UENUM(BlueprintType)
+enum class EEscapeType: uint8
+{
+	None = 0,
+	ESC,
+	E
+};
+
 UCLASS()
 class HELLDIVERS2_API AInteractObj : public AActor
 {
@@ -23,7 +31,7 @@ protected:
 	//UPROPERTY(EditAnywhere, Category = Collision)
 	//TObjectPtr<class UShapeComponent> TiggerCollision;
 
-	UPROPERTY(EditAnywhere, Category = Collision)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Collision)
 	TObjectPtr<class USphereComponent> TiggerCollision;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BasicInfo)
@@ -43,9 +51,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Widget/*, Meta = (AllowprivateAccess = "true")*/)
 	FText Description;
 
-private:
+	UPROPERTY()
 	TObjectPtr<UMaterialInterface> Mat_OutLiner;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ObjType)
+	EEscapeType EscapeType;
+
 public:
-	void SetActiveOverlapEvent(bool bActive);
+	virtual void SetActiveOverlapEvent(bool bActive);
+
+	FORCEINLINE EEscapeType GetEscapeType() { return EscapeType; }
 };

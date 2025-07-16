@@ -11,8 +11,8 @@ void UFireSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	
 	FString LevelName = GetWorld()->GetMapName();
-	if (LevelName == "InGameTestmap") bTickable = true;
-
+	if (LevelName != "TestShip")
+		bTickable = true;
 
 	OverlappedCharacters.Empty();
 }

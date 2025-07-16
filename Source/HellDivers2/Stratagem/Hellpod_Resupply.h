@@ -17,8 +17,8 @@ class HELLDIVERS2_API AHellpod_Resupply : public AHellpod_Supply
 public:
 	AHellpod_Resupply();
 
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
 
-	// AHellpod_Supply을(를) 통해 상속됨
-	void SpawnSupplyItems() override;
+	//// AHellpod_Supply을(를) 통해 상속됨
+	//void SpawnSupplyItems() override;
 };

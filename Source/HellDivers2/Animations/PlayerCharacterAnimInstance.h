@@ -13,6 +13,7 @@
 /**
  * 
  */
+
 UCLASS()
 class HELLDIVERS2_API UPlayerCharacterAnimInstance : public UAnimInstance
 {
@@ -20,6 +21,8 @@ class HELLDIVERS2_API UPlayerCharacterAnimInstance : public UAnimInstance
 	
 public:
 	UPlayerCharacterAnimInstance();
+
+	FORCEINLINE void SetDivedCondition(bool inbDived) { bDived = inbDived; }
 
 protected:
 	virtual void NativeInitializeAnimation() override;
@@ -48,6 +51,9 @@ protected:
 	float MovingThreshould;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	uint8 bActiveRegIK : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	uint8 bIsFalling : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
@@ -68,14 +74,26 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	float MovementYaw;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	uint8 bDive : 1;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	EItemType ItemType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	uint8 bRightButton : 1;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	uint8 bLeftButton : 1;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	uint8 bDived : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	FVector2D InputVector;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	FRotator ChestRot;
 
 	UFUNCTION(BlueprintCallable)
 	float CalculateMovementYaw();
@@ -85,6 +103,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stratagem)
 	uint8 bPullingPin : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Object)
+	uint8 bActiveConsole : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IK)
 	FTransform Tr_LFootGoal;

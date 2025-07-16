@@ -33,6 +33,8 @@ private:
 	FVector ForwardVec;
 	FVector RightVec;
 
+	TObjectPtr<AActor> RidingPlayer;
+
 public:
 	void AttchPlayer(class APlayerCharacter* Player);
 

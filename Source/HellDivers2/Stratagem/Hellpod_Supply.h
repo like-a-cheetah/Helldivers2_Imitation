@@ -23,23 +23,25 @@ private:
 	void FoldMachine();
 
 protected:
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
+	//TObjectPtr<UAnimationAsset> DefaultAnim;	
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
+	//TObjectPtr<UAnimationAsset> SpreadAnim;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
+	//TObjectPtr<UAnimationAsset> FoldAnim;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", Meta = (AllowPrivateAccess = "true"));
+	//TObjectPtr<USkeletalMeshComponent> AttachMesh;
+
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
+	//TSubclassOf<class AItem> SupplyItem;
+
+	//TArray<TObjectPtr<AActor>> SupplyItems;
+
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<UAnimationAsset> DefaultAnim;	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<UAnimationAsset> SpreadAnim;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<UAnimationAsset> FoldAnim;
+	TObjectPtr<class AHellpodAttachment> HellpodAttachment;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh", Meta = (AllowPrivateAccess = "true"));
-	TObjectPtr<USkeletalMeshComponent> AttachMesh;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (AllowPrivateAccess = true))
-	TSubclassOf<class AItem> SupplyItem;
-
-	TArray<TObjectPtr<AActor>> SupplyItems;
-
-	FActorSpawnParameters SpawnParam;
-
-	virtual void SpawnSupplyItems();
+	//virtual void SpawnSupplyItems();
 
 };

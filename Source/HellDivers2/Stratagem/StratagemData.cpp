@@ -6,12 +6,12 @@
 void UStratagemData::SetbActive(bool InbActive)
 {
 	bActive = InbActive;
-	OnActiveWidget.Execute(InbActive);
+	OnActiveWidget.ExecuteIfBound(InbActive);
 }
 
 void UStratagemData::CorrectMacro(int n)
 {
-	OnCorrectMacro.Execute(n);
+	OnCorrectMacro.ExecuteIfBound(n);
 }
 
 void UStratagemData::SetCoolTime(UWorld* World)
@@ -23,7 +23,7 @@ void UStratagemData::SetCoolTime(UWorld* World)
 	World->GetTimerManager().SetTimer(HideWidgetTimer, [this]()
 	{ 
 		if(ShowConditionWidgetDelegate.IsBound()) 
-			ShowConditionWidgetDelegate.Execute(false); 
+			ShowConditionWidgetDelegate.ExecuteIfBound(false);
 	}, 2.0f, false);
 }
 

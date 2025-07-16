@@ -3,6 +3,9 @@
 
 #include "Characters/Components/AIC_BileTitan.h"
 
+#include "NavigationSystem.h"
+#include "NavigationData.h"
+
 AAIC_BileTitan::AAIC_BileTitan()
 {
     PrimaryActorTick.bCanEverTick = true;

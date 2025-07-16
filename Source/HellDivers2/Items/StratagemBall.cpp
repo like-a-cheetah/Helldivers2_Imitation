@@ -39,37 +39,22 @@ AStratagemBall::AStratagemBall()
 void AStratagemBall::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-//void AStratagemBall::DFS(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
-//{
-//	UE_LOG(LogTemp, Log, TEXT("Ball Overlap"));
-//
-//	if (StratagemType == (uint8)EStratagemType::NotAttack) NC_Laser->SetAsset(NS_Blue);
-//	else NC_Laser->SetAsset(NS_Red);
-//
-//	FVector HitPoint = GetActorLocation();
-//
-//	SkelMeshComp->SetSimulatePhysics(false);
-//	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, false);
-//	AttachToActor(OtherActor, AttachRules);
-//
-//	SetActorRotation({ 0.0f, 0.0f, 0.0f });
-//	SetActorLocation(HitPoint);
-//	//SetActorLocation({ Hit.ImpactPoint.X , Hit.ImpactPoint.Y, Hit.ImpactPoint.Z });
-//
-//	UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoop, GetActorLocation());
-//	SkelMeshComp->PlayAnimation(AS_Lockup, false);
-//
-//	SpawnStratagem();
-//}
+} 
 
 void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Log, TEXT("Hit"));
+	float DotProduct = FVector::DotProduct(Hit.Normal, FVector::UpVector);
+	float AngleInRadians = FMath::Acos(DotProduct);
+	float AngleInDegrees = FMath::RadiansToDegrees(AngleInRadians);
+
+	if (AngleInDegrees > 30.0f)
+		return;
 
 	if (StratagemType == (uint8)EStratagemType::NotAttack) NC_Laser->SetAsset(NS_Blue);
 	else NC_Laser->SetAsset(NS_Red);
+
+	AbsoluteForwardVector = GetVelocity().Rotation();
+	AbsoluteForwardVector.Pitch = 0.0f;
 
 	FVector HitPoint = GetActorLocation();
 
@@ -80,8 +65,13 @@ void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 	AttachToActor(OtherActor, AttachRules);
 
 	SetActorRotation({ 0.0f, 0.0f, 0.0f });
-	SetActorLocation(HitPoint);
-	//SetActorLocation({ Hit.ImpactPoint.X , Hit.ImpactPoint.Y, Hit.ImpactPoint.Z });
+
+	FHitResult HitResult;
+	if (GetWorld()->LineTraceSingleByObjectType(HitResult, GetActorLocation(), GetActorUpVector() * -100.0f + GetActorLocation(), ECollisionChannel::ECC_WorldStatic))
+	{
+		SetActorLocation(HitResult.ImpactPoint);
+	}
+	else SetActorLocation(HitPoint);
 
 	UGameplayStatics::PlaySoundAtLocation(this, SW_BallLoop, GetActorLocation());
 	SkelMeshComp->PlayAnimation(AS_Lockup, false);
@@ -92,12 +82,15 @@ void AStratagemBall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
 void AStratagemBall::SpawnStratagem()
 {
 	FVector SpawnLoc = GetActorLocation();
-	if (StratagemClass->IsChildOf(AHellpod::StaticClass())) SpawnLoc.Z += 20000.0f;
+	if (StratagemClass && StratagemClass->IsChildOf(AHellpod::StaticClass())) SpawnLoc.Z += 80000.0f;
 	FRotator SpawnRot = FRotator::ZeroRotator;
 
-	AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, AbsoluteForwardVector);
+	if (StratagemClass.Get())
+	{
+		AStratagem* Stratagem = GetWorld()->SpawnActor<AStratagem>(StratagemClass, SpawnLoc, AbsoluteForwardVector);
 
-	Stratagem->OnDestoryBall.BindLambda([this]() {
-		Destroy();
-		});
+		Stratagem->OnDestoryBall.BindLambda([this]() {
+			Destroy();
+			});
+	}
 }

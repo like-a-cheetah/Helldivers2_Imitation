@@ -53,6 +53,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	float MinYaw;
 
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> GunIcon;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> RoundIcon;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TObjectPtr<UTexture> RoundFillIcon;
+
 	UPROPERTY(EditAnywhere, Category = Sound)
 	TObjectPtr<USoundWave> SW_Shot;
 };

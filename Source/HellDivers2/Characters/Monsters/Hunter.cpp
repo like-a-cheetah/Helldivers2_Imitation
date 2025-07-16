@@ -34,3 +34,31 @@ UAcidComponent* AHunter::GetAcidComp()
 {
 	return AcidComp;
 }
+
+void AHunter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	AcidComp->DestroyComponent();
+
+	Super::EndPlay(EndPlayReason);
+}
+
+void AHunter::BeginActivity()
+{
+	Super::BeginActivity();
+
+	AAIController* AIController = Cast<AAIController>(GetController());
+
+	if (AIController)
+	{
+		UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+		if (BlackboardComp)
+		{
+			BlackboardComp->SetValueAsBool(BBKEY_ACID_READY, true);
+
+			AcidComp->OnAcidCoolTimeEnd.BindLambda([BlackboardComp](bool bAcidReady) {
+				BlackboardComp->SetValueAsBool(BBKEY_ACID_READY, bAcidReady);
+				});
+		}
+	}
+
+}

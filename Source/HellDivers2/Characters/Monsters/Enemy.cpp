@@ -5,6 +5,9 @@
 
 #include "NavigationSystem.h"
 #include "Components/CapsuleComponent.h"
+#include "PaperSpriteComponent.h"
+#include "PaperSprite.h"
+#include "NavigationSystem.h"
 
 #include "Characters/Components/AIController_Enemy.h"
 #include "Animations/AnimInst_Enemy.h"
@@ -26,6 +29,7 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionProfileName("Enemy");
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetGenerateOverlapEvents(false);
+	GetMesh()->bHiddenInSceneCapture = true;
 
 	GetCharacterMovement()->GravityScale = 0.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(100.0f);
@@ -35,7 +39,23 @@ AEnemy::AEnemy()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
-	BodyRadius = GetCapsuleComponent()->GetScaledCapsuleRadius();
+	PaperSpriteComp = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("PaperSprite"));
+	PaperSpriteComp->SetupAttachment(RootComponent);
+	PaperSpriteComp->bVisibleInSceneCaptureOnly = true;
+	static ConstructorHelpers::FObjectFinder<UPaperSprite> SpriteAsset(TEXT("/Script/Paper2D.PaperSprite'/Game/HellDivers2/UI/InGame/PlayerSprite_Sprite.PlayerSprite_Sprite'"));
+	if (SpriteAsset.Succeeded()) PaperSpriteComp->SetSprite(SpriteAsset.Object);
+	PaperSpriteComp->SetSpriteColor(FColor::Red);
+	PaperSpriteComp->SetRelativeLocation(FVector(-0.000000, 0.000057, 4669.000000));
+	PaperSpriteComp->SetRelativeRotation(FRotator(0, 0, -90.0f));
+	PaperSpriteComp->SetCollisionProfileName(TEXT("NoCollision"));
+	PaperSpriteComp->SetCanEverAffectNavigation(false);
+	PaperSpriteComp->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
+
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		FVector NewScale = MeshComp->Bounds.BoxExtent;
+		PaperSpriteComp->SetWorldScale3D(FVector(NewScale.X, 1.f, NewScale.Y));
+	}
 	PatrolRadius = 5000.0f;
 
 	EnemyMovementMode = EEnemyMovementMode::Idle;
@@ -44,12 +64,21 @@ AEnemy::AEnemy()
 	Stat->OnHpZero.AddDynamic(this, &AEnemy::Die);
 
 	AttackDamage = 5.0f;
+
+	bRefreshAnimRot = true;
 }
 
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+	ANavigationData* AgentData = NavSys->GetNavDataForAgentName(AgentName);
+	GetCharacterMovement()->NavAgentProps = AgentData->GetConfig();
+
+	BodyRadius = GetCapsuleComponent()->GetScaledCapsuleRadius();
+	BodyHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
 	if (!bOnceBeginPlayEvent)
 	{
@@ -64,7 +93,10 @@ void AEnemy::BeginPlay()
 	{
 		if (CapsuleComp != RootComponent)
 		{
-			CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapAttackBone);
+			CapsuleComp->SetCollisionProfileName(TEXT("EnemyOverlapAttack"));
+			CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+			if(!CapsuleComp->OnComponentBeginOverlap.IsBound()) CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapAttackBone);
 
 			BoneCollisions.Add(*CapsuleComp->GetName(), CapsuleComp);
 		}
@@ -76,7 +108,6 @@ void AEnemy::BeginPlay()
 
 		FOnMontageEnded OnBornMTEnd;
 		OnBornMTEnd.BindLambda([this](UAnimMontage* Montage, bool bInterrupted) { BeginActivity(); });
-		//OnBornMTEnd.BindUObject(this, &AEnemy::BeginActivity);
 		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnBornMTEnd, MT_Born);
 	}
 	else
@@ -88,6 +119,11 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 void AEnemy::BeginActivity()
@@ -102,8 +138,9 @@ void AEnemy::BeginActivity()
 
 	AAIController* AIController = GetWorld()->SpawnActor<AAIController>(AIControllerClass);
 	AIController->Possess(this);
-	AIController->GetBlackboardComponent()->SetValueAsVector(BBKEY_PATROLPOS, BeginPatrolPos);
 
+	if (BeginPatrolPos.IsZero())  BeginPatrolPos = GetActorLocation();
+	AIController->GetBlackboardComponent()->SetValueAsVector(BBKEY_PATROLPOS, BeginPatrolPos);
 
 	AAIController_Enemy* EnemyAIController = Cast<AAIController_Enemy>(GetController());
 
@@ -127,7 +164,7 @@ float AEnemy::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AControl
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	
-	OnAttacked.Execute(DamageCauser);
+	OnAttacked.ExecuteIfBound(DamageCauser);
 
 	return Damage;
 }
@@ -202,6 +239,9 @@ void AEnemy::MontagePlay_SetEndDelegate(UAnimMontage* Montage, FOnMontageEnded O
 
 void AEnemy::SetRotate(float Angle)
 {
-	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	Cast<UAnimInst_Enemy>(AnimInst)->SetRotateAngle(Angle);
+	//if (bRefreshAnimRot)
+	{
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		Cast<UAnimInst_Enemy>(AnimInst)->SetRotateAngle(Angle);
+	}
 }

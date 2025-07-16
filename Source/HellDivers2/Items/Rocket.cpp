@@ -15,8 +15,8 @@
 
 ARocket::ARocket()
 {
-	ProjectileMovementComp->InitialSpeed = 20000.0f;
-	ProjectileMovementComp->MaxSpeed = 10000.0f;
+	ProjectileMovementComp->InitialSpeed = 40000.0f;
+	ProjectileMovementComp->MaxSpeed = 40000.0f;
 
 	MeshComp->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Script/Engine.StaticMesh'/Game/PROJECTS/HELLDIVERS_2/WEAPONS/STRATAGEM/GR-8_RECOILESS/Rocket/StaticMesh.StaticMesh'"));
@@ -35,6 +35,8 @@ ARocket::ARocket()
 
 	Trail->SetupAttachment(RootComponent);
 	Trail->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	
+	Damage = 100.0f;
 }
 
 void ARocket::BeginPlay()
@@ -58,8 +60,8 @@ void ARocket::HitPostProcess(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	SplashCollision->SetGenerateOverlapEvents(true);
 	SplashCollision->OnComponentBeginOverlap.AddDynamic(this, &ARocket::OnOverlapBegin_Splash);
 
-	SplashCollision->SetVisibility(true);
-	SplashCollision->SetHiddenInGame(false);
+	//SplashCollision->SetVisibility(true);
+	//SplashCollision->SetHiddenInGame(false);
 
 	SplashCollision->RegisterComponent();
 	SplashCollision->UpdateOverlaps();
@@ -70,9 +72,7 @@ void ARocket::OnOverlapBegin_Splash(UPrimitiveComponent* OverlappedComponent, AA
 	UCharacterStatComponent* CharacterStat = OtherActor->FindComponentByClass<UCharacterStatComponent>();
 	if (CharacterStat)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Splash %s %s"), *OtherActor->GetName(), *OtherComp->GetName());
-
-		CharacterStat->ApplyDamage(100.0f);
+		CharacterStat->ApplyDamage(Damage);
 
 		ACharacter* Character = Cast<ACharacter>(OtherActor);
 		if (Character)

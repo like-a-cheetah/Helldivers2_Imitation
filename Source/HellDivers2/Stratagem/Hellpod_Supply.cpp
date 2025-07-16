@@ -3,38 +3,39 @@
 
 #include "Stratagem/Hellpod_Supply.h"
 
+#include "Objects/HellpodAttachment.h"
+
 AHellpod_Supply::AHellpod_Supply()
 {
-	SetRootComponent(HellpodMesh);
-
-	AttachMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachMesh"));
-
-	SpawnParam.Owner = this;
-	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 }
 
 void AHellpod_Supply::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AttachMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	TArray<AActor*> Childs;
+	GetAttachedActors(Childs);
 
-	SpawnSupplyItems();
+	for (AActor* Child : Childs)
+	{
+		if (AHellpodAttachment* Attachment = Cast<AHellpodAttachment>(Child))
+		{
+			HellpodAttachment = Attachment;
+			break;
+		}
+	}
 }
 
 void AHellpod_Supply::SpawnAttachMachine()
 {
 	Super::SpawnAttachMachine();
 
-	AttachMesh->SetCollisionProfileName(TEXT("BlockAll"));
-	AttachMesh->PlayAnimation(SpreadAnim, false);
+	HellpodAttachment->Setup();
+	//AttachMesh->SetCollisionProfileName(TEXT("BlockAll"));
+	//AttachMesh->PlayAnimation(SpreadAnim, false);
 }
 
 void AHellpod_Supply::FoldMachine()
 {
-	if(SupplyItems.Num() <= 0) AttachMesh->PlayAnimation(FoldAnim, false);
-}
-
-void AHellpod_Supply::SpawnSupplyItems()
-{
+	HellpodAttachment->Hide();
 }

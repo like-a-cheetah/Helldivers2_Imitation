@@ -3,6 +3,8 @@
 
 #include "Characters/Components/AIC_Hunter.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
+
 AAIC_Hunter::AAIC_Hunter()
 {
     static ConstructorHelpers::FObjectFinder<UBlackboardData> BBAssetRef(TEXT("/Script/AIModule.BlackboardData'/Game/HellDivers2/Characters/Enemys/Hunter/BB_Hunter.BB_Hunter'"));

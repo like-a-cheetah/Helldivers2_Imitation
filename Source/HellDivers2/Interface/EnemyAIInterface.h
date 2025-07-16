@@ -26,6 +26,7 @@ protected:
 
 public:
 	virtual float GetBodyRadius() = 0;
+	virtual float GetBodyHalfHeight() = 0;
 	virtual float GetPatrolRadius() = 0;
 	virtual void SetTarget(AActor* InTarget) = 0;
 	virtual AActor* GetTarget() = 0;

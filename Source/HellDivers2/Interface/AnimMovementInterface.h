@@ -29,6 +29,7 @@ public:
 	virtual void SetStop() = 0;
 	virtual void SetAttack() = 0;
 	virtual void SetRotate(float Angle) = 0;
+	virtual void SetRefreshAnimRot(bool InbAnimRot) = 0;
 
 	FOnAttackEnded OnAttackEnded;
 };

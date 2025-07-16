@@ -25,6 +25,7 @@ public:
 private:
 	uint8 bOnceBeginPlayEvent : 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	uint8 bBroken : 1;
 
 	uint32 MonsterN;
