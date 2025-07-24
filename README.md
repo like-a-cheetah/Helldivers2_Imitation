@@ -25,5 +25,21 @@ UE5.4, C++
 [![](http://img.youtube.com/vi/2MWUPr9oNmQ/0.jpg)](https://youtu.be/2MWUPr9oNmQ)]
 
 ## 주요 컨텐츠 사진
-![image8](https://github.com/user-attachments/assets/46c528c3-8b4a-4216-bdea-a41f513fec2f)
-<img width="332" alt="image5" src="https://github.com/user-attachments/assets/5c75c800-ca23-42ad-8d59-54dbc8173db3" />
+### 플레이어 정비 레벨
+<img width="332" alt="image6" src="https://github.com/user-attachments/assets/e316698b-08a0-415b-bf5b-54d0a37256b0" />
+<img src="https://github.com/user-attachments/assets/46c528c3-8b4a-4216-bdea-a41f513fec2f" width="332">
+
+함선
+- 게임을 시작하는 레벨
+- 원하는 미션과 착륙지점을 선택할 수 있다.
+- 스트라타젬(스킬)을 선택하고 전장에 투입된다.
+
+### 전투, 미션 수행 레벨
+<img width="332" alt="image9" src="https://github.com/user-attachments/assets/04d1df0d-7e0a-424d-812f-2cd8ef271f1b" />
+<img src="https://github.com/user-attachments/assets/1a6f9d36-98c4-4bfd-a51a-27b780c48160" width="332">
+
+행성
+- 선택한 레벨로 헬포드(낙하선)을 타고 착륙
+
+<img src="https://github.com/user-attachments/assets/f279f6b2-6a66-4c95-9810-aad7218f220e" width="332">
+<img src="https://github.com/user-attachments/assets/" width="332">
