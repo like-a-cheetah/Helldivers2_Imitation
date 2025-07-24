@@ -5,6 +5,7 @@
 **프로젝트 목표**
 - 원작 Helldivers2의 디자인을 요구사항 명세서로 받은 상황으로 가정하고, 실무에서 요구사항에 따라 개발하듯, UE 5.4 엔진으로 게임내 컨텐츠들을 원작과 동일한 수준으로 완벽하게 구현
 - 원작 Helldivers2의 한 라운드를 완벽 구현
+  
 **Helldivers2 애셋 출처**
 - 오브젝트, 몬스터 : https://discord.gg/the-helldivers-archive-1210541115829260328
 - 플레이어 캐릭터 애셋 추출 : https://dtzxporter.com/tools/diver
