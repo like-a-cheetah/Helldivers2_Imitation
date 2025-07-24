@@ -63,4 +63,10 @@ FPS류 기본 동작과 벽타기
 - 포복 방향, 다이빙 방향, 조준 방향 전부 카메라 전방을 기준으로 한다.
 
 ### 오브젝트, 아이템
+<img src="https://github.com/user-attachments/assets/edf598c1-5449-4232-b032-220f5b5e8926" width="332">
+<img src="https://github.com/user-attachments/assets/82cc24c8-4494-4db2-b0c9-3c31e4e4bae6" width="332">
 
+총기
+- 주무기, 보조무기, 특수무기 세 종류, 단발과 연사 둘 중 하나
+- 손에 장착한 무기에 따라 UI 갱신
+- 중복 장착시, 분리후 새로운 아이템을 장착
