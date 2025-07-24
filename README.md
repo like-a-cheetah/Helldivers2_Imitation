@@ -123,7 +123,20 @@ FPS류 기본 동작과 벽타기
 3. 범위 내 가장 큰 몬스터 추적 공격, 충돌지역 화염 도트피해
 
 ### UI 디자인
-![image50](https://github.com/user-attachments/assets/03e08da8-3540-46f3-a660-48fc4dc87c6a)
-![image53](https://github.com/user-attachments/assets/72f4b4a4-dcdb-4444-a949-0f150d7d279e)
-![image55](https://github.com/user-attachments/assets/075ca0bc-89c2-4c6e-9844-2ce24050d754)
 <img src="https://github.com/user-attachments/assets/bc88d0b7-d45d-4abb-9e94-64249420db58" width="500">
+
+스트라타젬 선택 UI
+
+![image50](https://github.com/user-attachments/assets/03e08da8-3540-46f3-a660-48fc4dc87c6a)
+
+아이템과 체력의 상태가 갱신
+
+![image53](https://github.com/user-attachments/assets/72f4b4a4-dcdb-4444-a949-0f150d7d279e)
+
+원하는 스트라타젬의 매크로 키를 입력하여 사용
+
+![image54](https://github.com/user-attachments/assets/e4b2b5cc-4f06-4fa1-8a68-754195a92ed4)
+
+미니맵 확대
+
+
