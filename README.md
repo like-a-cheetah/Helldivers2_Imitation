@@ -42,4 +42,7 @@ UE5.4, C++
 - 선택한 레벨로 헬포드(낙하선)을 타고 착륙
 
 <img src="https://github.com/user-attachments/assets/f279f6b2-6a66-4c95-9810-aad7218f220e" width="332">
-<img src="https://github.com/user-attachments/assets/" width="332">
+<img src="https://github.com/user-attachments/assets/a3c70d56-98ab-4962-aed7-d8e1149fa93f" width="332">
+
+- 매크로 콘솔을 성공시켜 미션 클리어와 탈출기 호출
+- 탈출기로 함선으로 이동
