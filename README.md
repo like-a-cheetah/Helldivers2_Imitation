@@ -112,3 +112,12 @@ FPS류 기본 동작과 벽타기
 
 보급
 - 소모품 재충전, 특수 무기 보급
+
+<img src="https://github.com/user-attachments/assets/d876ae74-4314-48d4-8f88-6b9100906fce" width="332">
+<img src="https://github.com/user-attachments/assets/a7c32507-6a30-4d0d-8b71-0f054fb35c29" width="332">
+<img src="https://github.com/user-attachments/assets/aa1328a6-9c70-44c5-8db2-4e2bcb52759d" width="332">
+
+폭격
+1. 범위 내 무작위 위치 포탄 발사
+2. 게틀링건 위치 조정 후, 발사
+3. 범위 내 가장 큰 몬스터 추적 공격, 충돌지역 화염 도트피해
