@@ -1,10 +1,11 @@
-**프로젝트 목적**
-- UE5.4에서 제공하는 내장 기능들과 툴셋을 다양하게 활용하여, 언리얼 엔진 전반에 대한 이해도와 숙련도를 향상시키는 것을 주요 목적으로 한다.
-- 취업 포트폴리오용 프로젝트로서, 정해진 목표를 명확히 달성할 수 있는 개발 능력을 보여주는 것을 부목적으로 한다.
+🖥️ 프로젝트 소개
+Helldivers2 게임 모작 1인 프로젝트입니다.
 
-**프로젝트 목표**
-- 원작 Helldivers2의 디자인을 요구사항 명세서로 받은 상황으로 가정하고, 실무에서 요구사항에 따라 개발하듯, UE 5.4 엔진으로 게임내 컨텐츠들을 원작과 동일한 수준으로 완벽하게 구현
-- 원작 Helldivers2의 한 라운드를 완벽 구현
+🕰️ 개발 기간
+약 10개월
+
+⚙️ 개발 환경
+UE5.4, C++
   
 **Helldivers2 애셋 출처**
 - 오브젝트, 몬스터 : https://discord.gg/the-helldivers-archive-1210541115829260328
@@ -15,7 +16,5 @@
 - https://www.fab.com/ko/listings/5f4b0f22-91fd-4a51-a772-9b0f8617f0d7
 - https://www.fab.com/ko/listings/a48b3fa2-2ebf-42c2-8892-fa20a1eff289
 
----
-## 개발 컨텐츠
-
+##개발 컨텐츠
 ![image8](https://github.com/user-attachments/assets/46c528c3-8b4a-4216-bdea-a41f513fec2f)
