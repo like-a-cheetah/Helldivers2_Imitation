@@ -126,4 +126,4 @@ FPS류 기본 동작과 벽타기
 ![image50](https://github.com/user-attachments/assets/03e08da8-3540-46f3-a660-48fc4dc87c6a)
 ![image53](https://github.com/user-attachments/assets/72f4b4a4-dcdb-4444-a949-0f150d7d279e)
 ![image55](https://github.com/user-attachments/assets/075ca0bc-89c2-4c6e-9844-2ce24050d754)
-![image56](https://github.com/user-attachments/assets/bc88d0b7-d45d-4abb-9e94-64249420db58)
+<img src="https://github.com/user-attachments/assets/bc88d0b7-d45d-4abb-9e94-64249420db58" width="500">
