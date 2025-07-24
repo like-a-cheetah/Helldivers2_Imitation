@@ -108,6 +108,7 @@ FPS류 기본 동작과 벽타기
 
 ### 스트라타젬(지원) 시스템
 <img src="https://github.com/user-attachments/assets/9c671b04-b107-4389-81a5-30814b99176d" width="332">
+<img src="https://github.com/user-attachments/assets/d5cde539-236f-41ac-9ad2-438666852139" width="332">
 
 보급
 - 소모품 재충전, 특수 무기 보급
