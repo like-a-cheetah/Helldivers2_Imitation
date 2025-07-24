@@ -9,7 +9,8 @@ Helldivers2 게임 모작 1인 프로젝트입니다.
 ⚙️ 개발 환경
 
 UE5.4, C++
-  
+
+## 출처
 **Helldivers2 애셋 출처**
 - 오브젝트, 몬스터 : https://discord.gg/the-helldivers-archive-1210541115829260328
 - 플레이어 캐릭터 애셋 추출 : https://dtzxporter.com/tools/diver
