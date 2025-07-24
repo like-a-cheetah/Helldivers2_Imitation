@@ -22,7 +22,7 @@ UE5.4, C++
 
 # 인게임 풀영상
 
-[![](http://img.youtube.com/vi/2MWUPr9oNmQ/0.jpg)](https://youtu.be/2MWUPr9oNmQ)]
+[![](http://img.youtube.com/vi/2MWUPr9oNmQ/0.jpg)](https://youtu.be/2MWUPr9oNmQ)
 
 # 주요 컨텐츠 사진
 ### 플레이어 정비 레벨
@@ -70,3 +70,44 @@ FPS류 기본 동작과 벽타기
 - 주무기, 보조무기, 특수무기 세 종류, 단발과 연사 둘 중 하나
 - 손에 장착한 무기에 따라 UI 갱신
 - 중복 장착시, 분리후 새로운 아이템을 장착
+
+<img src="https://github.com/user-attachments/assets/acc1b1a7-44a0-4b17-a04e-0f20d9b6bcd2" width="332">
+<img src="https://github.com/user-attachments/assets/2ed38918-54f1-430a-9146-63b357b62d57" width="332">
+
+소모품
+- 힐팩은 사용시 4초동안 계속해서 회복
+- 수류탄은 좌클릭으로 안전핀을 뽑아 4초 후 폭발
+
+### 몬스터
+<img src="https://github.com/user-attachments/assets/46992cf2-7b5d-4dda-993e-a32650e01be1" width="332">
+<img src="https://github.com/user-attachments/assets/8ac4e3eb-092c-4108-bf98-0954276aa155" width="332">
+<img src="https://github.com/user-attachments/assets/81e24472-7b8c-4482-b8a8-8652c918c88d" width="332">
+
+헌터
+- 거리에 따라 돌진 공격, 단순 공격
+- 플레이어 감지시 동료 호출
+- 폭발하는 독성 구체를 일정 시간마다 발사
+  
+<img src="https://github.com/user-attachments/assets/95b1ac19-b0b1-4564-a1fe-63a431f06e52" width="332">
+
+워리어
+- 거리에 따라 돌진 공격, 단순 공격
+
+<img src="https://github.com/user-attachments/assets/71d66477-e1af-412e-a50d-3f2142f05efc" width="332">
+<img src="https://github.com/user-attachments/assets/88f0b386-c11d-4ee1-afe8-964eaf87edaa" width="332">
+
+몬스터 둥지
+- 헌터와 워리어가 스폰되는 오브젝트
+- 플레이어의 공격으로 파괴
+
+<img src="https://github.com/user-attachments/assets/dd8f9185-be6b-403f-895f-552262335bae" width="332">
+<img src="https://github.com/user-attachments/assets/64bea449-68a0-4f68-b5c5-ac277111d0e8" width="332">
+
+차저
+- 일정 거리로 멀어지면 돌진하며, 일정 시간이 지날 경우엔 멈춘다.
+
+### 스트라타젬(지원) 시스템
+<img src="https://github.com/user-attachments/assets/9c671b04-b107-4389-81a5-30814b99176d" width="332">
+
+보급
+- 소모품 재충전, 특수 무기 보급
