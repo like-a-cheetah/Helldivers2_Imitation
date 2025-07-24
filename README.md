@@ -20,5 +20,8 @@ UE5.4, C++
 - https://www.fab.com/ko/listings/5f4b0f22-91fd-4a51-a772-9b0f8617f0d7
 - https://www.fab.com/ko/listings/a48b3fa2-2ebf-42c2-8892-fa20a1eff289
 
-##개발 컨텐츠
+## 인게임 풀영상
+https://youtu.be/2MWUPr9oNmQ
+
+## 주요 컨텐츠 사진
 ![image8](https://github.com/user-attachments/assets/46c528c3-8b4a-4216-bdea-a41f513fec2f)
