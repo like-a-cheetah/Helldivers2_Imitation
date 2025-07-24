@@ -20,11 +20,11 @@ UE5.4, C++
 - https://www.fab.com/ko/listings/5f4b0f22-91fd-4a51-a772-9b0f8617f0d7
 - https://www.fab.com/ko/listings/a48b3fa2-2ebf-42c2-8892-fa20a1eff289
 
-## 인게임 풀영상
+# 인게임 풀영상
 
 [![](http://img.youtube.com/vi/2MWUPr9oNmQ/0.jpg)](https://youtu.be/2MWUPr9oNmQ)]
 
-## 주요 컨텐츠 사진
+# 주요 컨텐츠 사진
 ### 플레이어 정비 레벨
 <img width="332" alt="image6" src="https://github.com/user-attachments/assets/e316698b-08a0-415b-bf5b-54d0a37256b0" />
 <img src="https://github.com/user-attachments/assets/46c528c3-8b4a-4216-bdea-a41f513fec2f" width="332">
@@ -61,3 +61,6 @@ FPS류 기본 동작과 벽타기
 - Alt키를 눌러 다이빙을 한다.
 - 다이빙 중에도 공격이 가능하다.
 - 포복 방향, 다이빙 방향, 조준 방향 전부 카메라 전방을 기준으로 한다.
+
+### 오브젝트, 아이템
+
