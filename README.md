@@ -139,4 +139,5 @@ FPS류 기본 동작과 벽타기
 
 미니맵 확대
 
-
+## 기술 요소
+https://www.notion.so/Portfolio-22bf1d4c0b17803ab689fda829920244
